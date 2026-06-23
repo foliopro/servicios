@@ -2,7 +2,7 @@
 <html lang="es" class="dark">
 <head>
     <meta charset="UTF-8">
-    <title>Supension Plus - Sistema Integral</title>
+    <title>CanoServicios V2.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .panel { display: none; }
@@ -12,49 +12,46 @@
 <body class="bg-slate-950 text-slate-200 flex h-screen font-sans">
 
     <aside class="w-64 bg-slate-900 border-r border-slate-800 p-6 flex flex-col gap-4">
-        <h2 class="text-cyan-400 font-bold text-xl mb-4">Supension Plus</h2>
+        <div class="mb-6">
+            <img src="https://via.placeholder.com/150x50?text=CanoServicios+V2.0" alt="Logo" class="mb-2">
+            <h2 class="text-cyan-400 font-bold text-lg">CanoServicios V2.0</h2>
+        </div>
         <button onclick="ui.show('empresa')" class="text-left p-2 hover:bg-slate-800 rounded">Datos Empresa</button>
-        <button onclick="ui.show('edificios')" class="text-left p-2 hover:bg-slate-800 rounded">Gestión Edificios</button>
-        <button onclick="ui.show('aptos')" class="text-left p-2 hover:bg-slate-800 rounded">Gestión Apartamentos</button>
-        <button onclick="ui.show('liquidacion')" class="text-left p-2 hover:bg-slate-800 rounded">Liquidación Servicios</button>
-        <button onclick="ui.show('facturacion')" class="text-left p-2 hover:bg-slate-800 rounded">Facturación</button>
+        <button onclick="ui.show('edificios')" class="text-left p-2 hover:bg-slate-800 rounded">Edificios</button>
+        <button onclick="ui.show('aptos')" class="text-left p-2 hover:bg-slate-800 rounded">Apartamentos</button>
+        <button onclick="ui.show('liquidacion')" class="text-left p-2 hover:bg-slate-800 rounded">Liquidación</button>
     </aside>
 
     <main class="flex-1 p-8 overflow-y-auto">
         
         <div id="empresa" class="panel active-panel">
-            <h1 class="text-2xl mb-6">Datos de la Empresa</h1>
-            <input type="text" placeholder="Nombre Empresa" class="bg-slate-800 p-2 w-full mb-4">
-            <button class="bg-cyan-600 px-4 py-2">Guardar Empresa</button>
+            <h1 class="text-2xl mb-6 text-cyan-400">Datos de la Empresa</h1>
+            <div class="grid grid-cols-2 gap-4 max-w-2xl bg-slate-900 p-6 rounded">
+                <input id="empNombre" placeholder="Nombre Empresa" class="bg-slate-800 p-2 border border-slate-700">
+                <input id="empNit" placeholder="NIT" class="bg-slate-800 p-2 border border-slate-700">
+                <input id="empDir" placeholder="Dirección" class="bg-slate-800 p-2 border border-slate-700 col-span-2">
+                <input id="empTel" placeholder="Teléfonos" class="bg-slate-800 p-2 border border-slate-700">
+                <input id="empMail" placeholder="Correo" class="bg-slate-800 p-2 border border-slate-700">
+                <button onclick="data.saveEmpresa()" class="bg-cyan-600 px-4 py-2 col-span-2">Actualizar Datos</button>
+            </div>
         </div>
 
         <div id="edificios" class="panel">
             <h1 class="text-2xl mb-6">Gestión de Edificios</h1>
-            <div class="grid grid-cols-2 gap-4 mb-6">
-                <input id="nEdif" placeholder="Nombre Edificio" class="bg-slate-800 p-2">
-                <input id="nitEdif" placeholder="NIT" class="bg-slate-800 p-2">
+            <button onclick="ui.show('edificios')" class="bg-green-600 px-4 py-2 mb-4">Agregar Edificio</button>
             </div>
-            <button onclick="db.addEdificio()" class="bg-green-600 px-4 py-2">Agregar Edificio</button>
-            <div id="listEdificios" class="mt-6"></div>
-        </div>
-
-        <div id="aptos" class="panel">
-            <h1 class="text-2xl mb-6">Gestión de Apartamentos</h1>
-            <button class="bg-blue-600 px-4 py-2">Agregar Apto</button>
-        </div>
 
         <div id="liquidacion" class="panel">
             <h1 class="text-2xl mb-6">Hoja Electrónica de Liquidación</h1>
             <div class="grid grid-cols-3 gap-4 mb-6">
-                <input id="vAgua" placeholder="Costo Total Agua" class="bg-slate-800 p-2">
-                <input id="vEnergia" placeholder="Costo Total Energía" class="bg-slate-800 p-2">
-                <input id="vAseo" placeholder="Costo Total Aseo" class="bg-slate-800 p-2">
+                <input id="vAgua" placeholder="Costo Agua" class="bg-slate-800 p-2">
+                <input id="vEnergia" placeholder="Costo Energía" class="bg-slate-800 p-2">
+                <input id="vAseo" placeholder="Costo Aseo" class="bg-slate-800 p-2">
             </div>
-            <table class="w-full text-left bg-slate-900 border border-slate-700">
-                <thead class="bg-slate-800"><tr><th class="p-2">Apto</th><th>Agua</th><th>Energía</th><th>Acción</th></tr></thead>
+            <table class="w-full bg-slate-900">
+                <thead class="bg-slate-800"><tr><th class="p-2">Apto</th><th>Agua</th><th>Energía</th></tr></thead>
                 <tbody id="gridLiquidar"></tbody>
             </table>
-            <button onclick="calc.ejecutar()" class="mt-6 bg-emerald-600 px-6 py-3 w-full font-bold">PROCESAR LIQUIDACIÓN</button>
         </div>
     </main>
 
@@ -66,20 +63,23 @@
             }
         };
 
-        const db = {
-            edificios: [],
-            addEdificio: () => {
-                const nombre = document.getElementById('nEdif').value;
-                db.edificios.push({ nombre });
-                alert("Edificio agregado a la Base de Datos");
+        const data = {
+            saveEmpresa: () => {
+                const info = {
+                    nombre: document.getElementById('empNombre').value,
+                    nit: document.getElementById('empNit').value
+                };
+                localStorage.setItem('empresaData', JSON.stringify(info));
+                alert("Datos guardados correctamente.");
             }
         };
 
-        const calc = {
-            ejecutar: () => {
-                // Aquí aplicaremos la lógica de consumo proporcional
-                // (ConsumoApto / TotalEdificio) * CostoTotal
-                alert("Liquidación calculada con éxito.");
+        // Cargar datos al iniciar
+        window.onload = () => {
+            const saved = JSON.parse(localStorage.getItem('empresaData'));
+            if(saved) {
+                document.getElementById('empNombre').value = saved.nombre || '';
+                document.getElementById('empNit').value = saved.nit || '';
             }
         };
     </script>
