@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <title>Sistema Supension Plus</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .section { display: none; }
+        .active { display: block; }
+        @media print { .no-print { display: none; } }
+    </style>
+</head>
+<body class="bg-slate-900 text-gray-100 min-h-screen">
+
+    <div id="loginSection" class="section active flex justify-center items-center h-screen">
+        <div class="bg-slate-800 p-8 rounded-xl shadow-2xl w-96">
+            <h2 class="text-2xl font-bold mb-6 text-cyan-400 text-center">Acceso al Sistema</h2>
+            <input id="user" type="text" placeholder="Usuario" class="w-full p-2 mb-4 bg-slate-700 rounded">
+            <input id="pass" type="password" placeholder="Contraseña" class="w-full p-2 mb-6 bg-slate-700 rounded">
+            <button onclick="login()" class="w-full bg-cyan-600 p-2 rounded font-bold">ENTRAR</button>
+        </div>
+    </div>
+
+    <nav id="mainNav" class="section bg-slate-800 p-4 flex gap-4 no-print border-b border-cyan-900">
+        <button onclick="show('edificiosSection')" class="text-cyan-400">Edificios</button>
+        <button onclick="show('apartamentosSection')" class="text-cyan-400">Apartamentos</button>
+        <button onclick="show('liquidacionSection')" class="text-cyan-400">Liquidación</button>
+        <button onclick="show('facturasSection')" class="text-cyan-400">Facturas</button>
+    </nav>
+
+    <div class="p-8">
+        <div id="edificiosSection" class="section">
+            <h1 class="text-2xl mb-4">Gestión de Edificios</h1>
+            <div class="bg-slate-800 p-4 rounded">
+                <input id="edifNombre" class="bg-slate-700 p-2" placeholder="Nombre Edificio">
+                <button onclick="crud.addEdificio()" class="bg-green-600 px-4 py-2 rounded">Agregar</button>
+            </div>
+            <div id="listaEdificios" class="mt-4"></div>
+        </div>
+
+        <div id="apartamentosSection" class="section">
+            <h1 class="text-2xl mb-4">Gestión de Apartamentos</h1>
+            </div>
+
+        <div id="liquidacionSection" class="section">
+            <h1 class="text-2xl mb-4">Hoja Electrónica de Liquidación</h1>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse border border-slate-700">
+                    <thead><tr class="bg-slate-800">
+                        <th class="p-2 border">Apto</th>
+                        <th class="p-2 border">Cant. Agua</th>
+                        <th class="p-2 border">Cant. Energía</th>
+                        <th class="p-2 border">Valor Agua</th>
+                        <th class="p-2 border">Valor Energía</th>
+                        <th class="p-2 border">Valor Aseo</th>
+                    </tr></thead>
+                    <tbody id="gridLiquidacion"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Lógica de navegación
+        function show(id) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        }
+
+        function login() {
+            // Validación simple
+            document.getElementById('loginSection').classList.remove('active');
+            document.getElementById('mainNav').classList.add('active');
+            show('edificiosSection');
+        }
+
+        // Lógica de datos (Simulación de DB)
+        const crud = {
+            addEdificio: () => {
+                alert("Edificio agregado a la base de datos JSON");
+                // Aquí iría la lógica de persistencia
+            }
+        };
+    </script>
+</body>
+</html>
