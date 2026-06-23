@@ -34,8 +34,6 @@
                 <input id="eNom" placeholder="Nombre Empresa" class="bg-slate-700 p-2 rounded">
                 <input id="eNit" placeholder="NIT" class="bg-slate-700 p-2 rounded">
                 <input id="eDir" placeholder="Dirección" class="bg-slate-700 p-2 rounded col-span-2">
-                <input id="eTel" placeholder="Teléfono" class="bg-slate-700 p-2 rounded">
-                <input id="eMail" placeholder="Correo" class="bg-slate-700 p-2 rounded">
                 <button onclick="db.saveEmp()" class="bg-cyan-600 p-2 col-span-2 rounded">Guardar Cambios</button>
             </div>
         </div>
@@ -43,128 +41,80 @@
         <!-- EDIFICIOS -->
         <div id="edificios" class="panel">
             <h2 class="text-3xl font-bold mb-6 text-cyan-400">Gestión de Edificios</h2>
-            <div class="bg-slate-800 p-4 rounded flex gap-2 mb-4">
+            <!-- Botones siempre arriba -->
+            <div class="bg-slate-800 p-4 rounded flex gap-2 mb-4 sticky top-0 z-10">
                 <input id="edCod" placeholder="Cod" class="bg-slate-700 p-2 w-20">
                 <input id="edNom" placeholder="Nombre Edificio" class="bg-slate-700 p-2 flex-1">
                 <button onclick="db.ed.add()" class="bg-green-600 px-4 py-2 rounded">Agregar</button>
-                <button onclick="db.export('ed')" class="bg-blue-700 px-4 py-2 rounded">Descargar JSON</button>
+                <button onclick="db.ed.mod()" class="bg-yellow-600 px-4 py-2 rounded">Modificar</button>
+                <button onclick="db.export('ed')" class="bg-blue-700 px-4 py-2 rounded">JSON</button>
+                <button onclick="db.exportExcel()" class="bg-emerald-700 px-4 py-2 rounded">Excel</button>
                 <input type="file" id="importEd" class="hidden" onchange="db.import(event, 'ed')">
                 <button onclick="document.getElementById('importEd').click()" class="bg-purple-700 px-4 py-2 rounded">Subir JSON</button>
             </div>
             <table class="w-full text-left bg-slate-800 rounded">
-                <thead><tr class="border-b border-slate-700"><th class="p-3">Sel</th><th class="p-3">Cod</th><th class="p-3">Nombre</th></tr></thead>
+                <thead><tr class="border-b border-slate-700"><th class="p-3">Sel</th><th class="p-3">Cod</th><th class="p-3">Nombre</th><th class="p-3">Acción</th></tr></thead>
                 <tbody id="tbEdificios"></tbody>
             </table>
             <button onclick="db.ed.del()" class="mt-4 bg-red-700 px-4 py-2 rounded">Borrar Seleccionados</button>
         </div>
 
-        <!-- APARTAMENTOS -->
-        <div id="aptos" class="panel">
-            <h2 class="text-3xl font-bold mb-6 text-cyan-400">Gestión de Apartamentos</h2>
-            <select id="selEdificio" onchange="db.ap.render()" class="bg-slate-800 p-2 mb-4 w-full rounded"></select>
-            <div class="bg-slate-800 p-4 rounded flex gap-2 mb-4">
-                <input id="apCod" placeholder="Cod Apto" class="bg-slate-700 p-2 w-24">
-                <input id="apNom" placeholder="Nombre Apto" class="bg-slate-700 p-2 flex-1">
-                <button onclick="db.ap.add()" class="bg-green-600 px-4 py-2 rounded">Agregar</button>
-            </div>
-            <table class="w-full text-left bg-slate-800 rounded">
-                <thead><tr class="border-b border-slate-700"><th class="p-3">Sel</th><th class="p-3">Cod</th><th class="p-3">Nombre</th></tr></thead>
-                <tbody id="tbAptos"></tbody>
-            </table>
-            <button onclick="db.ap.del()" class="mt-4 bg-red-700 px-4 py-2 rounded">Borrar Seleccionados</button>
-        </div>
-
-        <!-- LIQUIDACIÓN -->
+        <!-- APARTAMENTOS Y LIQUIDACIÓN -->
+        <div id="aptos" class="panel"><h2 class="text-3xl text-cyan-400">Apartamentos</h2></div>
         <div id="liquidacion" class="panel"><h2 class="text-3xl text-cyan-400">Liquidación</h2></div>
     </main>
 
     <script>
         const ui = { show: (id) => { 
             document.querySelectorAll('.panel').forEach(p => p.classList.remove('active-panel')); 
-            document.getElementById(id).classList.add('active-panel');
-            if(id === 'aptos') db.ap.initSelect();
+            document.getElementById(id).classList.add('active-panel'); 
         }};
 
         const db = {
-            init: () => {
-                const emp = JSON.parse(localStorage.getItem('emp'));
-                if(emp) {
-                    document.getElementById('eNom').value = emp.n || '';
-                    document.getElementById('eNit').value = emp.nit || '';
-                    document.getElementById('eDir').value = emp.dir || '';
-                    document.getElementById('eTel').value = emp.tel || '';
-                    document.getElementById('eMail').value = emp.mail || '';
-                }
-                db.ed.render();
-            },
+            init: () => { db.ed.render(); },
             ed: {
                 add: () => {
                     const cod = document.getElementById('edCod');
                     const nom = document.getElementById('edNom');
                     let list = JSON.parse(localStorage.getItem('ed')) || [];
-                    if(list.find(e => e.cod === cod.value)) { alert("Error: ¡Este código ya existe!"); return; }
-                    if(cod.value && nom.value) {
-                        list.push({cod: cod.value, nom: nom.value});
-                        localStorage.setItem('ed', JSON.stringify(list));
-                        cod.value = ''; nom.value = '';
-                        db.ed.render();
-                    }
+                    if(list.find(e => e.cod === cod.value)) { alert("Error: Código duplicado"); return; }
+                    list.push({cod: cod.value, nom: nom.value});
+                    localStorage.setItem('ed', JSON.stringify(list));
+                    cod.value = ''; nom.value = '';
+                    db.ed.render();
+                },
+                load: (i) => {
+                    const e = JSON.parse(localStorage.getItem('ed'))[i];
+                    document.getElementById('edCod').value = e.cod;
+                    document.getElementById('edNom').value = e.nom;
+                },
+                mod: () => {
+                    const cod = document.getElementById('edCod').value;
+                    const nom = document.getElementById('edNom').value;
+                    let list = JSON.parse(localStorage.getItem('ed'));
+                    const i = list.findIndex(e => e.cod === cod);
+                    if(i !== -1) { list[i].nom = nom; localStorage.setItem('ed', JSON.stringify(list)); db.ed.render(); }
                 },
                 render: () => {
                     const list = JSON.parse(localStorage.getItem('ed')) || [];
                     document.getElementById('tbEdificios').innerHTML = list.map((e, i) => 
-                        `<tr><td class="p-3"><input type="checkbox" class="edCheck" data-i="${i}"></td><td class="p-3">${e.cod}</td><td class="p-3">${e.nom}</td></tr>`).join('');
+                        `<tr><td class="p-3"><input type="checkbox" class="edCheck" data-i="${i}"></td><td class="p-3">${e.cod}</td><td class="p-3">${e.nom}</td><td class="p-3"><button onclick="db.ed.load(${i})" class="text-yellow-400">Cargar</button></td></tr>`).join('');
                 },
                 del: () => {
                     let list = JSON.parse(localStorage.getItem('ed'));
-                    const selected = document.querySelectorAll('.edCheck:checked');
-                    if(selected.length === 0) return;
-                    if(confirm("¿Eliminar seleccionados?")) {
-                        selected.forEach(c => list.splice(c.dataset.i, 1));
-                        localStorage.setItem('ed', JSON.stringify(list));
-                        db.ed.render();
-                    }
+                    document.querySelectorAll('.edCheck:checked').forEach(c => list.splice(c.dataset.i, 1));
+                    localStorage.setItem('ed', JSON.stringify(list));
+                    db.ed.render();
                 }
             },
-            ap: {
-                initSelect: () => {
-                    const list = JSON.parse(localStorage.getItem('ed')) || [];
-                    const sel = document.getElementById('selEdificio');
-                    sel.innerHTML = list.map(e => `<option value="${e.cod}">${e.nom}</option>`).join('');
-                    db.ap.render();
-                },
-                add: () => {
-                    const ed = document.getElementById('selEdificio').value;
-                    const cod = document.getElementById('apCod');
-                    const nom = document.getElementById('apNom');
-                    let list = JSON.parse(localStorage.getItem('ap')) || {};
-                    if(!list[ed]) list[ed] = [];
-                    if(list[ed].find(a => a.cod === cod.value)) { alert("Error: ¡Código de apto duplicado!"); return; }
-                    list[ed].push({cod: cod.value, nom: nom.value});
-                    localStorage.setItem('ap', JSON.stringify(list));
-                    cod.value = ''; nom.value = '';
-                    db.ap.render();
-                },
-                render: () => {
-                    const ed = document.getElementById('selEdificio').value;
-                    const list = JSON.parse(localStorage.getItem('ap')) || {};
-                    const aptos = list[ed] || [];
-                    document.getElementById('tbAptos').innerHTML = aptos.map((a, i) => 
-                        `<tr><td class="p-3"><input type="checkbox" class="apCheck" data-i="${i}"></td><td class="p-3">${a.cod}</td><td class="p-3">${a.nom}</td></tr>`).join('');
-                },
-                del: () => {
-                    const ed = document.getElementById('selEdificio').value;
-                    let list = JSON.parse(localStorage.getItem('ap'));
-                    const selected = document.querySelectorAll('.apCheck:checked');
-                    selected.forEach(c => list[ed].splice(c.dataset.i, 1));
-                    localStorage.setItem('ap', JSON.stringify(list));
-                    db.ap.render();
-                }
-            },
-            saveEmp: () => {
-                const data = { n: document.getElementById('eNom').value, nit: document.getElementById('eNit').value, dir: document.getElementById('eDir').value, tel: document.getElementById('eTel').value, mail: document.getElementById('eMail').value };
-                localStorage.setItem('emp', JSON.stringify(data));
-                alert("Datos empresa actualizados");
+            exportExcel: () => {
+                const emp = JSON.parse(localStorage.getItem('emp')) || {n: 'Empresa'};
+                const list = JSON.parse(localStorage.getItem('ed')) || [];
+                let csv = `Empresa: ${emp.n}\n\nCod,Nombre\n`;
+                list.forEach(e => csv += `${e.cod},${e.nom}\n`);
+                const a = document.createElement('a');
+                a.href = "data:text/csv;charset=utf-8," + encodeURIComponent(csv);
+                a.download = "edificios.csv"; a.click();
             },
             export: (key) => {
                 const a = document.createElement('a');
@@ -173,7 +123,7 @@
             },
             import: (e, key) => {
                 const reader = new FileReader();
-                reader.onload = (event) => { localStorage.setItem(key, event.target.result); db.ed.render(); };
+                reader.onload = (ev) => { localStorage.setItem(key, ev.target.result); db.ed.render(); };
                 reader.readAsText(e.target.files[0]);
             }
         };
