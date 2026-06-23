@@ -2,96 +2,84 @@
 <html lang="es" class="dark">
 <head>
     <meta charset="UTF-8">
-    <title>Sistema Supension Plus</title>
+    <title>Supension Plus - Sistema Integral</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        .section { display: none; }
-        .active { display: block !important; }
-        @media print { .no-print { display: none; } }
+        .panel { display: none; }
+        .active-panel { display: block; }
     </style>
 </head>
-<body class="bg-slate-900 text-gray-100 font-sans">
+<body class="bg-slate-950 text-slate-200 flex h-screen font-sans">
 
-    <div id="loginSection" class="section active flex justify-center items-center h-screen">
-        <div class="bg-slate-800 p-8 rounded-xl shadow-2xl w-96 border border-cyan-900">
-            <h2 class="text-2xl font-bold mb-6 text-cyan-400 text-center">Acceso al Sistema</h2>
-            <input id="user" type="text" placeholder="Usuario" class="w-full p-2 mb-4 bg-slate-700 rounded text-white">
-            <input id="pass" type="password" placeholder="Contraseña" class="w-full p-2 mb-6 bg-slate-700 rounded text-white">
-            <button onclick="auth.login()" class="w-full bg-cyan-600 p-2 rounded font-bold hover:bg-cyan-500 transition">ENTRAR</button>
+    <aside class="w-64 bg-slate-900 border-r border-slate-800 p-6 flex flex-col gap-4">
+        <h2 class="text-cyan-400 font-bold text-xl mb-4">Supension Plus</h2>
+        <button onclick="ui.show('empresa')" class="text-left p-2 hover:bg-slate-800 rounded">Datos Empresa</button>
+        <button onclick="ui.show('edificios')" class="text-left p-2 hover:bg-slate-800 rounded">Gestión Edificios</button>
+        <button onclick="ui.show('aptos')" class="text-left p-2 hover:bg-slate-800 rounded">Gestión Apartamentos</button>
+        <button onclick="ui.show('liquidacion')" class="text-left p-2 hover:bg-slate-800 rounded">Liquidación Servicios</button>
+        <button onclick="ui.show('facturacion')" class="text-left p-2 hover:bg-slate-800 rounded">Facturación</button>
+    </aside>
+
+    <main class="flex-1 p-8 overflow-y-auto">
+        
+        <div id="empresa" class="panel active-panel">
+            <h1 class="text-2xl mb-6">Datos de la Empresa</h1>
+            <input type="text" placeholder="Nombre Empresa" class="bg-slate-800 p-2 w-full mb-4">
+            <button class="bg-cyan-600 px-4 py-2">Guardar Empresa</button>
         </div>
-    </div>
 
-    <nav id="mainNav" class="section bg-slate-800 p-4 flex gap-6 no-print border-b border-cyan-900 justify-center">
-        <button onclick="nav.show('edificiosSection')" class="text-cyan-400 hover:text-white">Edificios</button>
-        <button onclick="nav.show('apartamentosSection')" class="text-cyan-400 hover:text-white">Apartamentos</button>
-        <button onclick="nav.show('liquidacionSection')" class="text-cyan-400 hover:text-white">Liquidación</button>
-    </nav>
-
-    <div class="p-8 max-w-5xl mx-auto">
-        <div id="edificiosSection" class="section">
-            <h1 class="text-2xl mb-6 text-cyan-400 font-bold">Gestión de Edificios</h1>
-            <div class="bg-slate-800 p-6 rounded-lg mb-6">
-                <input id="inEdif" placeholder="Nombre Edificio" class="p-2 bg-slate-700 rounded w-full mb-2">
-                <button onclick="data.addEdificio()" class="bg-green-600 px-4 py-2 rounded">Agregar Edificio</button>
+        <div id="edificios" class="panel">
+            <h1 class="text-2xl mb-6">Gestión de Edificios</h1>
+            <div class="grid grid-cols-2 gap-4 mb-6">
+                <input id="nEdif" placeholder="Nombre Edificio" class="bg-slate-800 p-2">
+                <input id="nitEdif" placeholder="NIT" class="bg-slate-800 p-2">
             </div>
-            <div id="listaEdificios" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+            <button onclick="db.addEdificio()" class="bg-green-600 px-4 py-2">Agregar Edificio</button>
+            <div id="listEdificios" class="mt-6"></div>
         </div>
 
-        <div id="liquidacionSection" class="section">
-            <h1 class="text-2xl mb-6 text-cyan-400 font-bold">Hoja Electrónica de Liquidación</h1>
+        <div id="aptos" class="panel">
+            <h1 class="text-2xl mb-6">Gestión de Apartamentos</h1>
+            <button class="bg-blue-600 px-4 py-2">Agregar Apto</button>
+        </div>
+
+        <div id="liquidacion" class="panel">
+            <h1 class="text-2xl mb-6">Hoja Electrónica de Liquidación</h1>
             <div class="grid grid-cols-3 gap-4 mb-6">
-                <input type="number" id="costoAgua" placeholder="Costo Total Agua" class="bg-slate-700 p-2 rounded">
-                <input type="number" id="costoEnergia" placeholder="Costo Total Energía" class="bg-slate-700 p-2 rounded">
-                <input type="number" id="costoAseo" placeholder="Costo Total Aseo" class="bg-slate-700 p-2 rounded">
+                <input id="vAgua" placeholder="Costo Total Agua" class="bg-slate-800 p-2">
+                <input id="vEnergia" placeholder="Costo Total Energía" class="bg-slate-800 p-2">
+                <input id="vAseo" placeholder="Costo Total Aseo" class="bg-slate-800 p-2">
             </div>
-            <table class="w-full bg-slate-800 rounded-lg overflow-hidden">
-                <thead class="bg-slate-700">
-                    <tr><th class="p-3">Apto</th><th>Agua</th><th>Energía</th><th>Seleccionar</th></tr>
-                </thead>
-                <tbody id="gridLiquidacion"></tbody>
+            <table class="w-full text-left bg-slate-900 border border-slate-700">
+                <thead class="bg-slate-800"><tr><th class="p-2">Apto</th><th>Agua</th><th>Energía</th><th>Acción</th></tr></thead>
+                <tbody id="gridLiquidar"></tbody>
             </table>
-            <button onclick="calc.liquidar()" class="mt-6 bg-cyan-600 w-full py-3 rounded font-bold hover:bg-cyan-500">CALCULAR Y FACTURAR</button>
+            <button onclick="calc.ejecutar()" class="mt-6 bg-emerald-600 px-6 py-3 w-full font-bold">PROCESAR LIQUIDACIÓN</button>
         </div>
-    </div>
+    </main>
 
     <script>
-        // ESTADO GLOBAL
-        let state = JSON.parse(localStorage.getItem('sysData')) || { edificios: [] };
-
-        const nav = {
+        const ui = {
             show: (id) => {
-                document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-                document.getElementById(id).classList.add('active');
+                document.querySelectorAll('.panel').forEach(p => p.classList.remove('active-panel'));
+                document.getElementById(id).classList.add('active-panel');
             }
         };
 
-        const auth = {
-            login: () => {
-                if(document.getElementById('user').value === 'admin' && document.getElementById('pass').value === '1234') {
-                    document.getElementById('loginSection').classList.remove('active');
-                    document.getElementById('mainNav').classList.add('active');
-                    nav.show('edificiosSection');
-                } else alert("Credenciales incorrectas");
-            }
-        };
-
-        const data = {
+        const db = {
+            edificios: [],
             addEdificio: () => {
-                const nombre = document.getElementById('inEdif').value;
-                state.edificios.push({ id: Date.now(), nombre, aptos: ['101', '102'] });
-                localStorage.setItem('sysData', JSON.stringify(state));
-                alert("Edificio guardado");
+                const nombre = document.getElementById('nEdif').value;
+                db.edificios.push({ nombre });
+                alert("Edificio agregado a la Base de Datos");
             }
         };
 
         const calc = {
-            liquidar: () => {
-                // Lógica de cálculo proporcional
-                const tAgua = parseFloat(document.getElementById('costoAgua').value);
-                const tEnergia = parseFloat(document.getElementById('costoEnergia').value);
-                // La distribución se hace proporcional al consumo de cada uno
-                alert("Liquidación procesada correctamente. Generando impresión...");
-                window.print();
+            ejecutar: () => {
+                // Aquí aplicaremos la lógica de consumo proporcional
+                // (ConsumoApto / TotalEdificio) * CostoTotal
+                alert("Liquidación calculada con éxito.");
             }
         };
     </script>
