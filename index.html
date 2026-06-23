@@ -12,7 +12,6 @@
 </head>
 <body class="flex h-screen overflow-hidden">
 
-    <!-- PANEL LATERAL -->
     <aside class="w-64 bg-slate-900 border-r border-cyan-900 p-6 flex flex-col gap-2">
         <div class="mb-8 text-center">
             <img src="https://via.placeholder.com/150x50?text=CanoServicios+V2.0" alt="Logo" class="mx-auto mb-2">
@@ -25,7 +24,6 @@
     </aside>
 
     <main class="flex-1 p-8 overflow-y-auto">
-        <!-- EMPRESA (RESTAURADA TOTALMENTE) -->
         <div id="empresa" class="panel active-panel">
             <h2 class="text-3xl font-bold mb-6 text-cyan-400">Datos Empresa</h2>
             <div class="grid grid-cols-2 gap-4 max-w-2xl bg-slate-800 p-6 rounded">
@@ -38,23 +36,21 @@
             </div>
         </div>
 
-        <!-- EDIFICIOS (REESTRUCTURADO) -->
         <div id="edificios" class="panel">
             <h2 class="text-3xl font-bold mb-6 text-cyan-400">Gestión de Edificios</h2>
-            <!-- Fila 1: Botones -->
             <div class="mb-4 flex gap-2">
                 <button onclick="db.ed.add()" class="bg-green-600 px-6 py-2 rounded">Agregar</button>
                 <button onclick="db.ed.mod()" class="bg-yellow-600 px-6 py-2 rounded">Modificar</button>
                 <button onclick="db.ed.del()" class="bg-red-700 px-6 py-2 rounded">Borrar</button>
                 <button onclick="db.export('ed')" class="bg-blue-700 px-6 py-2 rounded">JSON</button>
-                <button onclick="db.exportExcel()" class="bg-emerald-700 px-6 py-2 rounded">Exportar Excel</button>
-                <button onclick="document.getElementById('importEd').click()" class="bg-purple-700 px-6 py-2 rounded">Subir JSON</button>
-                <input type="file" id="importEd" class="hidden" onchange="db.import(event, 'ed')">
+                <button onclick="db.exportExcel()" class="bg-emerald-700 px-6 py-2 rounded">Excel</button>
             </div>
-            <!-- Fila 2: Inputs -->
-            <div class="bg-slate-800 p-4 rounded flex gap-2 mb-6">
-                <input id="edCod" placeholder="Cod" class="bg-slate-700 p-2 w-20">
-                <input id="edNom" placeholder="Nombre Edificio" class="bg-slate-700 p-2 flex-1">
+            <div class="bg-slate-800 p-4 rounded grid grid-cols-2 gap-2 mb-6">
+                <input id="edCod" placeholder="Cod Edificio" class="bg-slate-700 p-2">
+                <input id="edNom" placeholder="Nombre Edificio" class="bg-slate-700 p-2">
+                <input id="edDir" placeholder="Dirección" class="bg-slate-700 p-2">
+                <input id="edTel" placeholder="Teléfono" class="bg-slate-700 p-2">
+                <input id="edMail" placeholder="Correo" class="bg-slate-700 p-2 col-span-2">
             </div>
             <table class="w-full text-left bg-slate-800 rounded">
                 <thead><tr class="border-b border-slate-700"><th class="p-3">Sel</th><th class="p-3">Cod</th><th class="p-3">Nombre</th><th class="p-3">Acción</th></tr></thead>
@@ -86,28 +82,28 @@
             },
             ed: {
                 add: () => {
-                    const cod = document.getElementById('edCod');
-                    const nom = document.getElementById('edNom');
+                    const c = document.getElementById('edCod'), n = document.getElementById('edNom'), d = document.getElementById('edDir'), t = document.getElementById('edTel'), m = document.getElementById('edMail');
                     let list = JSON.parse(localStorage.getItem('ed')) || [];
-                    if(list.find(e => e.cod === cod.value)) { alert("Error: Código duplicado"); return; }
-                    if(cod.value && nom.value) {
-                        list.push({cod: cod.value, nom: nom.value});
-                        localStorage.setItem('ed', JSON.stringify(list));
-                        cod.value = ''; nom.value = '';
-                        db.ed.render();
-                    }
+                    if(list.find(e => e.cod === c.value)) { alert("Error: Código duplicado"); return; }
+                    list.push({cod: c.value, nom: n.value, dir: d.value, tel: t.value, mail: m.value});
+                    localStorage.setItem('ed', JSON.stringify(list));
+                    c.value = ''; n.value = ''; d.value = ''; t.value = ''; m.value = '';
+                    db.ed.render();
                 },
                 editar: (i) => {
-                    const e = JSON.parse(localStorage.getItem('ed'))[i];
+                    const list = JSON.parse(localStorage.getItem('ed'));
+                    const e = list[i];
                     document.getElementById('edCod').value = e.cod;
                     document.getElementById('edNom').value = e.nom;
+                    document.getElementById('edDir').value = e.dir;
+                    document.getElementById('edTel').value = e.tel;
+                    document.getElementById('edMail').value = e.mail;
                 },
                 mod: () => {
-                    const cod = document.getElementById('edCod').value;
-                    const nom = document.getElementById('edNom').value;
+                    const c = document.getElementById('edCod').value, n = document.getElementById('edNom').value, d = document.getElementById('edDir').value, t = document.getElementById('edTel').value, m = document.getElementById('edMail').value;
                     let list = JSON.parse(localStorage.getItem('ed'));
-                    const i = list.findIndex(e => e.cod === cod);
-                    if(i !== -1) { list[i].nom = nom; localStorage.setItem('ed', JSON.stringify(list)); db.ed.render(); }
+                    const i = list.findIndex(e => e.cod === c);
+                    if(i !== -1) { list[i] = {cod: c, nom: n, dir: d, tel: t, mail: m}; localStorage.setItem('ed', JSON.stringify(list)); db.ed.render(); }
                 },
                 render: () => {
                     const list = JSON.parse(localStorage.getItem('ed')) || [];
@@ -124,13 +120,12 @@
             saveEmp: () => {
                 const data = { n: document.getElementById('eNom').value, nit: document.getElementById('eNit').value, dir: document.getElementById('eDir').value, tel: document.getElementById('eTel').value, mail: document.getElementById('eMail').value };
                 localStorage.setItem('emp', JSON.stringify(data));
-                alert("Empresa actualizada");
+                alert("Empresa guardada");
             },
             exportExcel: () => {
                 const list = JSON.parse(localStorage.getItem('ed')) || [];
-                let html = '<table><tr><th>Cod</th><th>Nombre</th></tr>';
-                list.forEach(e => html += `<tr><td>${e.cod}</td><td>${e.nom}</td></tr>`);
-                html += '</table>';
+                let html = '<table><tr><th>Cod</th><th>Nombre</th><th>Dirección</th><th>Tel</th><th>Correo</th></tr>';
+                list.forEach(e => html += `<tr><td>${e.cod}</td><td>${e.nom}</td><td>${e.dir}</td><td>${e.tel}</td><td>${e.mail}</td></tr>`);
                 const blob = new Blob([html], {type: "application/vnd.ms-excel"});
                 const a = document.createElement('a');
                 a.href = URL.createObjectURL(blob);
@@ -140,11 +135,6 @@
                 const a = document.createElement('a');
                 a.href = "data:text/json;charset=utf-8," + encodeURIComponent(localStorage.getItem(key));
                 a.download = key + ".json"; a.click();
-            },
-            import: (e, key) => {
-                const reader = new FileReader();
-                reader.onload = (ev) => { localStorage.setItem(key, ev.target.result); db.ed.render(); };
-                reader.readAsText(e.target.files[0]);
             }
         };
         window.onload = db.init;
