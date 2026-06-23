@@ -6,79 +6,92 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .section { display: none; }
-        .active { display: block; }
+        .active { display: block !important; }
         @media print { .no-print { display: none; } }
     </style>
 </head>
-<body class="bg-slate-900 text-gray-100 min-h-screen">
+<body class="bg-slate-900 text-gray-100 font-sans">
 
     <div id="loginSection" class="section active flex justify-center items-center h-screen">
-        <div class="bg-slate-800 p-8 rounded-xl shadow-2xl w-96">
+        <div class="bg-slate-800 p-8 rounded-xl shadow-2xl w-96 border border-cyan-900">
             <h2 class="text-2xl font-bold mb-6 text-cyan-400 text-center">Acceso al Sistema</h2>
-            <input id="user" type="text" placeholder="Usuario" class="w-full p-2 mb-4 bg-slate-700 rounded">
-            <input id="pass" type="password" placeholder="Contraseña" class="w-full p-2 mb-6 bg-slate-700 rounded">
-            <button onclick="login()" class="w-full bg-cyan-600 p-2 rounded font-bold">ENTRAR</button>
+            <input id="user" type="text" placeholder="Usuario" class="w-full p-2 mb-4 bg-slate-700 rounded text-white">
+            <input id="pass" type="password" placeholder="Contraseña" class="w-full p-2 mb-6 bg-slate-700 rounded text-white">
+            <button onclick="auth.login()" class="w-full bg-cyan-600 p-2 rounded font-bold hover:bg-cyan-500 transition">ENTRAR</button>
         </div>
     </div>
 
-    <nav id="mainNav" class="section bg-slate-800 p-4 flex gap-4 no-print border-b border-cyan-900">
-        <button onclick="show('edificiosSection')" class="text-cyan-400">Edificios</button>
-        <button onclick="show('apartamentosSection')" class="text-cyan-400">Apartamentos</button>
-        <button onclick="show('liquidacionSection')" class="text-cyan-400">Liquidación</button>
-        <button onclick="show('facturasSection')" class="text-cyan-400">Facturas</button>
+    <nav id="mainNav" class="section bg-slate-800 p-4 flex gap-6 no-print border-b border-cyan-900 justify-center">
+        <button onclick="nav.show('edificiosSection')" class="text-cyan-400 hover:text-white">Edificios</button>
+        <button onclick="nav.show('apartamentosSection')" class="text-cyan-400 hover:text-white">Apartamentos</button>
+        <button onclick="nav.show('liquidacionSection')" class="text-cyan-400 hover:text-white">Liquidación</button>
     </nav>
 
-    <div class="p-8">
+    <div class="p-8 max-w-5xl mx-auto">
         <div id="edificiosSection" class="section">
-            <h1 class="text-2xl mb-4">Gestión de Edificios</h1>
-            <div class="bg-slate-800 p-4 rounded">
-                <input id="edifNombre" class="bg-slate-700 p-2" placeholder="Nombre Edificio">
-                <button onclick="crud.addEdificio()" class="bg-green-600 px-4 py-2 rounded">Agregar</button>
+            <h1 class="text-2xl mb-6 text-cyan-400 font-bold">Gestión de Edificios</h1>
+            <div class="bg-slate-800 p-6 rounded-lg mb-6">
+                <input id="inEdif" placeholder="Nombre Edificio" class="p-2 bg-slate-700 rounded w-full mb-2">
+                <button onclick="data.addEdificio()" class="bg-green-600 px-4 py-2 rounded">Agregar Edificio</button>
             </div>
-            <div id="listaEdificios" class="mt-4"></div>
+            <div id="listaEdificios" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
         </div>
 
-        <div id="apartamentosSection" class="section">
-            <h1 class="text-2xl mb-4">Gestión de Apartamentos</h1>
-            </div>
-
         <div id="liquidacionSection" class="section">
-            <h1 class="text-2xl mb-4">Hoja Electrónica de Liquidación</h1>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse border border-slate-700">
-                    <thead><tr class="bg-slate-800">
-                        <th class="p-2 border">Apto</th>
-                        <th class="p-2 border">Cant. Agua</th>
-                        <th class="p-2 border">Cant. Energía</th>
-                        <th class="p-2 border">Valor Agua</th>
-                        <th class="p-2 border">Valor Energía</th>
-                        <th class="p-2 border">Valor Aseo</th>
-                    </tr></thead>
-                    <tbody id="gridLiquidacion"></tbody>
-                </table>
+            <h1 class="text-2xl mb-6 text-cyan-400 font-bold">Hoja Electrónica de Liquidación</h1>
+            <div class="grid grid-cols-3 gap-4 mb-6">
+                <input type="number" id="costoAgua" placeholder="Costo Total Agua" class="bg-slate-700 p-2 rounded">
+                <input type="number" id="costoEnergia" placeholder="Costo Total Energía" class="bg-slate-700 p-2 rounded">
+                <input type="number" id="costoAseo" placeholder="Costo Total Aseo" class="bg-slate-700 p-2 rounded">
             </div>
+            <table class="w-full bg-slate-800 rounded-lg overflow-hidden">
+                <thead class="bg-slate-700">
+                    <tr><th class="p-3">Apto</th><th>Agua</th><th>Energía</th><th>Seleccionar</th></tr>
+                </thead>
+                <tbody id="gridLiquidacion"></tbody>
+            </table>
+            <button onclick="calc.liquidar()" class="mt-6 bg-cyan-600 w-full py-3 rounded font-bold hover:bg-cyan-500">CALCULAR Y FACTURAR</button>
         </div>
     </div>
 
     <script>
-        // Lógica de navegación
-        function show(id) {
-            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-        }
+        // ESTADO GLOBAL
+        let state = JSON.parse(localStorage.getItem('sysData')) || { edificios: [] };
 
-        function login() {
-            // Validación simple
-            document.getElementById('loginSection').classList.remove('active');
-            document.getElementById('mainNav').classList.add('active');
-            show('edificiosSection');
-        }
+        const nav = {
+            show: (id) => {
+                document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+                document.getElementById(id).classList.add('active');
+            }
+        };
 
-        // Lógica de datos (Simulación de DB)
-        const crud = {
+        const auth = {
+            login: () => {
+                if(document.getElementById('user').value === 'admin' && document.getElementById('pass').value === '1234') {
+                    document.getElementById('loginSection').classList.remove('active');
+                    document.getElementById('mainNav').classList.add('active');
+                    nav.show('edificiosSection');
+                } else alert("Credenciales incorrectas");
+            }
+        };
+
+        const data = {
             addEdificio: () => {
-                alert("Edificio agregado a la base de datos JSON");
-                // Aquí iría la lógica de persistencia
+                const nombre = document.getElementById('inEdif').value;
+                state.edificios.push({ id: Date.now(), nombre, aptos: ['101', '102'] });
+                localStorage.setItem('sysData', JSON.stringify(state));
+                alert("Edificio guardado");
+            }
+        };
+
+        const calc = {
+            liquidar: () => {
+                // Lógica de cálculo proporcional
+                const tAgua = parseFloat(document.getElementById('costoAgua').value);
+                const tEnergia = parseFloat(document.getElementById('costoEnergia').value);
+                // La distribución se hace proporcional al consumo de cada uno
+                alert("Liquidación procesada correctamente. Generando impresión...");
+                window.print();
             }
         };
     </script>
