@@ -27,7 +27,7 @@
     <!-- ÁREA DE TRABAJO -->
     <main class="flex-1 p-8 overflow-y-auto">
         
-        <!-- EMPRESA (RECUPERADA) -->
+        <!-- EMPRESA -->
         <div id="empresa" class="panel active-panel">
             <h2 class="text-3xl font-bold mb-6 text-cyan-400">Datos Empresa</h2>
             <div class="grid grid-cols-2 gap-4 max-w-2xl bg-slate-800 p-6 rounded">
@@ -40,7 +40,7 @@
             </div>
         </div>
 
-        <!-- EDIFICIOS (CON VALIDACIÓN DE CÓDIGO) -->
+        <!-- EDIFICIOS -->
         <div id="edificios" class="panel">
             <h2 class="text-3xl font-bold mb-6 text-cyan-400">Gestión de Edificios</h2>
             <div class="bg-slate-800 p-4 rounded flex gap-2 mb-4">
@@ -58,15 +58,31 @@
             <button onclick="db.ed.del()" class="mt-4 bg-red-700 px-4 py-2 rounded">Borrar Seleccionados</button>
         </div>
 
-        <!-- OTRAS SECCIONES (MANTENIDAS) -->
-        <div id="aptos" class="panel"><h2 class="text-3xl text-cyan-400">Apartamentos</h2></div>
+        <!-- APARTAMENTOS -->
+        <div id="aptos" class="panel">
+            <h2 class="text-3xl font-bold mb-6 text-cyan-400">Gestión de Apartamentos</h2>
+            <select id="selEdificio" onchange="db.ap.render()" class="bg-slate-800 p-2 mb-4 w-full rounded"></select>
+            <div class="bg-slate-800 p-4 rounded flex gap-2 mb-4">
+                <input id="apCod" placeholder="Cod Apto" class="bg-slate-700 p-2 w-24">
+                <input id="apNom" placeholder="Nombre Apto" class="bg-slate-700 p-2 flex-1">
+                <button onclick="db.ap.add()" class="bg-green-600 px-4 py-2 rounded">Agregar</button>
+            </div>
+            <table class="w-full text-left bg-slate-800 rounded">
+                <thead><tr class="border-b border-slate-700"><th class="p-3">Sel</th><th class="p-3">Cod</th><th class="p-3">Nombre</th></tr></thead>
+                <tbody id="tbAptos"></tbody>
+            </table>
+            <button onclick="db.ap.del()" class="mt-4 bg-red-700 px-4 py-2 rounded">Borrar Seleccionados</button>
+        </div>
+
+        <!-- LIQUIDACIÓN -->
         <div id="liquidacion" class="panel"><h2 class="text-3xl text-cyan-400">Liquidación</h2></div>
     </main>
 
     <script>
         const ui = { show: (id) => { 
             document.querySelectorAll('.panel').forEach(p => p.classList.remove('active-panel')); 
-            document.getElementById(id).classList.add('active-panel'); 
+            document.getElementById(id).classList.add('active-panel');
+            if(id === 'aptos') db.ap.initSelect();
         }};
 
         const db = {
@@ -86,11 +102,7 @@
                     const cod = document.getElementById('edCod');
                     const nom = document.getElementById('edNom');
                     let list = JSON.parse(localStorage.getItem('ed')) || [];
-                    // Validación de código repetido
-                    if(list.find(e => e.cod === cod.value)) {
-                        alert("Error: ¡Este código de edificio ya existe!");
-                        return;
-                    }
+                    if(list.find(e => e.cod === cod.value)) { alert("Error: ¡Este código ya existe!"); return; }
                     if(cod.value && nom.value) {
                         list.push({cod: cod.value, nom: nom.value});
                         localStorage.setItem('ed', JSON.stringify(list));
@@ -114,6 +126,41 @@
                     }
                 }
             },
+            ap: {
+                initSelect: () => {
+                    const list = JSON.parse(localStorage.getItem('ed')) || [];
+                    const sel = document.getElementById('selEdificio');
+                    sel.innerHTML = list.map(e => `<option value="${e.cod}">${e.nom}</option>`).join('');
+                    db.ap.render();
+                },
+                add: () => {
+                    const ed = document.getElementById('selEdificio').value;
+                    const cod = document.getElementById('apCod');
+                    const nom = document.getElementById('apNom');
+                    let list = JSON.parse(localStorage.getItem('ap')) || {};
+                    if(!list[ed]) list[ed] = [];
+                    if(list[ed].find(a => a.cod === cod.value)) { alert("Error: ¡Código de apto duplicado!"); return; }
+                    list[ed].push({cod: cod.value, nom: nom.value});
+                    localStorage.setItem('ap', JSON.stringify(list));
+                    cod.value = ''; nom.value = '';
+                    db.ap.render();
+                },
+                render: () => {
+                    const ed = document.getElementById('selEdificio').value;
+                    const list = JSON.parse(localStorage.getItem('ap')) || {};
+                    const aptos = list[ed] || [];
+                    document.getElementById('tbAptos').innerHTML = aptos.map((a, i) => 
+                        `<tr><td class="p-3"><input type="checkbox" class="apCheck" data-i="${i}"></td><td class="p-3">${a.cod}</td><td class="p-3">${a.nom}</td></tr>`).join('');
+                },
+                del: () => {
+                    const ed = document.getElementById('selEdificio').value;
+                    let list = JSON.parse(localStorage.getItem('ap'));
+                    const selected = document.querySelectorAll('.apCheck:checked');
+                    selected.forEach(c => list[ed].splice(c.dataset.i, 1));
+                    localStorage.setItem('ap', JSON.stringify(list));
+                    db.ap.render();
+                }
+            },
             saveEmp: () => {
                 const data = { n: document.getElementById('eNom').value, nit: document.getElementById('eNit').value, dir: document.getElementById('eDir').value, tel: document.getElementById('eTel').value, mail: document.getElementById('eMail').value };
                 localStorage.setItem('emp', JSON.stringify(data));
@@ -126,10 +173,7 @@
             },
             import: (e, key) => {
                 const reader = new FileReader();
-                reader.onload = (event) => {
-                    localStorage.setItem(key, event.target.result);
-                    db.ed.render();
-                };
+                reader.onload = (event) => { localStorage.setItem(key, event.target.result); db.ed.render(); };
                 reader.readAsText(e.target.files[0]);
             }
         };
