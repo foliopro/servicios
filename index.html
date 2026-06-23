@@ -1,87 +1,75 @@
-<!DOCTYPE html>
-<html lang="es" class="dark">
-<head>
-    <meta charset="UTF-8">
-    <title>CanoServicios V2.0</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        .panel { display: none; }
-        .active-panel { display: block; }
-    </style>
-</head>
-<body class="bg-slate-950 text-slate-200 flex h-screen font-sans">
+<div id="edificios" class="panel">
+    <h1 class="text-2xl mb-6 text-cyan-400">Gestión de Edificios</h1>
+    
+    <div class="bg-slate-900 p-6 rounded border border-slate-700 mb-6 flex gap-4">
+        <input id="newCod" placeholder="Cod Edif" class="bg-slate-800 p-2 border border-slate-700 w-24">
+        <input id="newNom" placeholder="Nombre Edificio" class="bg-slate-800 p-2 border border-slate-700 flex-1">
+        <button onclick="data.edificio.add()" class="bg-green-600 px-4 py-2">Agregar</button>
+        <button onclick="data.edificio.guardarJSON()" class="bg-blue-600 px-4 py-2">Guardar JSON</button>
+    </div>
 
-    <aside class="w-64 bg-slate-900 border-r border-slate-800 p-6 flex flex-col gap-4">
-        <div class="mb-6">
-            <img src="https://via.placeholder.com/150x50?text=CanoServicios+V2.0" alt="Logo" class="mb-2">
-            <h2 class="text-cyan-400 font-bold text-lg">CanoServicios V2.0</h2>
-        </div>
-        <button onclick="ui.show('empresa')" class="text-left p-2 hover:bg-slate-800 rounded">Datos Empresa</button>
-        <button onclick="ui.show('edificios')" class="text-left p-2 hover:bg-slate-800 rounded">Edificios</button>
-        <button onclick="ui.show('aptos')" class="text-left p-2 hover:bg-slate-800 rounded">Apartamentos</button>
-        <button onclick="ui.show('liquidacion')" class="text-left p-2 hover:bg-slate-800 rounded">Liquidación</button>
-    </aside>
+    <table class="w-full text-left bg-slate-900 border border-slate-700">
+        <thead class="bg-slate-800">
+            <tr>
+                <th class="p-2">Sel</th>
+                <th class="p-2">Cod Edif</th>
+                <th class="p-2">Nombre Edif</th>
+                <th class="p-2">Acciones</th>
+            </tr>
+        </thead>
+        <tbody id="listaEdificios"></tbody>
+    </table>
+    <button onclick="data.edificio.borrarSeleccionados()" class="mt-4 bg-red-600 px-4 py-2">Borrar Seleccionados</button>
+</div>
 
-    <main class="flex-1 p-8 overflow-y-auto">
+<script>
+    // Ampliación del objeto data para Edificios
+    const data = {
+        edificios: JSON.parse(localStorage.getItem('listaEdificios')) || [],
         
-        <div id="empresa" class="panel active-panel">
-            <h1 class="text-2xl mb-6 text-cyan-400">Datos de la Empresa</h1>
-            <div class="grid grid-cols-2 gap-4 max-w-2xl bg-slate-900 p-6 rounded">
-                <input id="empNombre" placeholder="Nombre Empresa" class="bg-slate-800 p-2 border border-slate-700">
-                <input id="empNit" placeholder="NIT" class="bg-slate-800 p-2 border border-slate-700">
-                <input id="empDir" placeholder="Dirección" class="bg-slate-800 p-2 border border-slate-700 col-span-2">
-                <input id="empTel" placeholder="Teléfonos" class="bg-slate-800 p-2 border border-slate-700">
-                <input id="empMail" placeholder="Correo" class="bg-slate-800 p-2 border border-slate-700">
-                <button onclick="data.saveEmpresa()" class="bg-cyan-600 px-4 py-2 col-span-2">Actualizar Datos</button>
-            </div>
-        </div>
-
-        <div id="edificios" class="panel">
-            <h1 class="text-2xl mb-6">Gestión de Edificios</h1>
-            <button onclick="ui.show('edificios')" class="bg-green-600 px-4 py-2 mb-4">Agregar Edificio</button>
-            </div>
-
-        <div id="liquidacion" class="panel">
-            <h1 class="text-2xl mb-6">Hoja Electrónica de Liquidación</h1>
-            <div class="grid grid-cols-3 gap-4 mb-6">
-                <input id="vAgua" placeholder="Costo Agua" class="bg-slate-800 p-2">
-                <input id="vEnergia" placeholder="Costo Energía" class="bg-slate-800 p-2">
-                <input id="vAseo" placeholder="Costo Aseo" class="bg-slate-800 p-2">
-            </div>
-            <table class="w-full bg-slate-900">
-                <thead class="bg-slate-800"><tr><th class="p-2">Apto</th><th>Agua</th><th>Energía</th></tr></thead>
-                <tbody id="gridLiquidar"></tbody>
-            </table>
-        </div>
-    </main>
-
-    <script>
-        const ui = {
-            show: (id) => {
-                document.querySelectorAll('.panel').forEach(p => p.classList.remove('active-panel'));
-                document.getElementById(id).classList.add('active-panel');
+        edificio: {
+            add: () => {
+                const cod = document.getElementById('newCod').value;
+                const nom = document.getElementById('newNom').value;
+                if(cod && nom) {
+                    data.edificios.push({ cod, nom });
+                    data.edificio.render();
+                }
+            },
+            render: () => {
+                const tbody = document.getElementById('listaEdificios');
+                tbody.innerHTML = '';
+                data.edificios.forEach((e, index) => {
+                    tbody.innerHTML += `<tr>
+                        <td class="p-2"><input type="checkbox" class="edif-check" data-index="${index}"></td>
+                        <td class="p-2">${e.cod}</td>
+                        <td class="p-2">${e.nom}</td>
+                        <td class="p-2"><button onclick="data.edificio.modificar(${index})" class="text-cyan-400">Modificar</button></td>
+                    </tr>`;
+                });
+                localStorage.setItem('listaEdificios', JSON.stringify(data.edificios));
+            },
+            borrarSeleccionados: () => {
+                if(confirm("¿Seguro? Si hay datos asociados, no se podrán recuperar.")) {
+                    const checkboxes = document.querySelectorAll('.edif-check:checked');
+                    checkboxes.forEach(chk => {
+                        data.edificios.splice(chk.dataset.index, 1);
+                    });
+                    data.edificio.render();
+                }
+            },
+            guardarJSON: () => {
+                const dataStr = JSON.stringify(data.edificios);
+                const blob = new Blob([dataStr], {type: "application/json"});
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = "edificios.json";
+                a.click();
             }
-        };
-
-        const data = {
-            saveEmpresa: () => {
-                const info = {
-                    nombre: document.getElementById('empNombre').value,
-                    nit: document.getElementById('empNit').value
-                };
-                localStorage.setItem('empresaData', JSON.stringify(info));
-                alert("Datos guardados correctamente.");
-            }
-        };
-
-        // Cargar datos al iniciar
-        window.onload = () => {
-            const saved = JSON.parse(localStorage.getItem('empresaData'));
-            if(saved) {
-                document.getElementById('empNombre').value = saved.nombre || '';
-                document.getElementById('empNit').value = saved.nit || '';
-            }
-        };
-    </script>
-</body>
-</html>
+        }
+    };
+    
+    // Inicializar lista al cargar
+    data.edificio.render();
+</script>
