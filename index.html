@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>EQUITY V2.0 - Plataforma Integral</title>
-    <script src="https://tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .panel { display: none; }
         .active-panel { display: block !important; }
@@ -24,6 +24,7 @@
         <button onclick="ui.show('liquidacion')" class="text-left px-4 py-2 hover:bg-slate-800 rounded">Liquidación</button>
     </aside>
 
+    <!-- ÁREA DE TRABAJO -->
     <main class="flex-1 p-8 overflow-y-auto relative">
         <!-- MODAL VISTA -->
         <div id="modalVista" class="hidden absolute inset-0 bg-black/80 flex items-center justify-center z-50">
@@ -36,13 +37,8 @@
             </div>
         </div>
 
-        <!-- BIENVENIDA -->
-        <div id="bienvenida" class="panel active-panel flex items-center justify-center h-full">
-            <img src="https://i.ibb.co/nsh1g3dN/equityph.png" alt="Marca" class="opacity-80">
-        </div>
-
         <!-- EMPRESA -->
-        <div id="empresa" class="panel">
+        <div id="empresa" class="panel active-panel">
             <h2 class="text-3xl font-bold mb-6 text-cyan-400">Datos Empresa</h2>
             <div class="grid grid-cols-2 gap-4 w-full bg-slate-800 p-6 rounded">
                 <input id="eNom" placeholder="Nombre Empresa" class="bg-slate-700 p-2 rounded">
@@ -83,7 +79,6 @@
 
     <script>
         const ui = { show: (id) => { 
-            // Oculta todos los paneles, incluyendo la bienvenida
             document.querySelectorAll('.panel').forEach(p => p.classList.remove('active-panel')); 
             document.getElementById(id).classList.add('active-panel'); 
         }};
