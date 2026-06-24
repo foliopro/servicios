@@ -7,13 +7,14 @@
     <style>
         .panel { display: none; }
         .active-panel { display: block !important; }
-        /* Forzamos que los paneles empiecen arriba */
-        #main-content { position: relative; }
+        /* Garantiza que al activarse un panel, este ocupe el espacio correcto arriba */
+        .active-panel { display: block; }
         body { background-color: #0f172a; color: #e2e8f0; }
     </style>
 </head>
 <body class="flex h-screen overflow-hidden">
 
+    <!-- PANEL LATERAL -->
     <aside class="w-64 bg-slate-900 border-r border-cyan-900 p-6 flex flex-col gap-2 z-20">
         <div class="mb-8 text-center">
             <img src="https://i.ibb.co/VYz8GWMV/logo.jpg" alt="Logo" class="mx-auto mb-2 w-24">
@@ -25,11 +26,14 @@
         <button onclick="ui.show('liquidacion')" class="text-left px-4 py-2 hover:bg-slate-800 rounded">Liquidación</button>
     </aside>
 
+    <!-- ÁREA DE TRABAJO -->
     <main id="main-content" class="flex-1 p-8 overflow-y-auto">
-        <div id="bienvenida" class="panel active-panel fixed inset-0 flex items-center justify-center bg-[#0f172a] z-10">
-            <img src="https://i.ibb.co/nsh1g3dN/equityph.png" alt="Marca" class="w-1/2 max-w-lg">
+        <!-- MARCA CENTRAL INICIAL -->
+        <div id="bienvenida" class="panel active-panel flex items-center justify-center h-full">
+            <img src="https://i.ibb.co/nsh1g3dN/equityph.png" alt="Marca" class="w-2/3 max-w-xl opacity-90">
         </div>
 
+        <!-- SECCIONES DE TRABAJO -->
         <div id="empresa" class="panel">
             <h2 class="text-3xl font-bold mb-6 text-cyan-400">Datos Empresa</h2>
             <div class="grid grid-cols-2 gap-4 w-full bg-slate-800 p-6 rounded">
@@ -44,7 +48,8 @@
 
         <div id="edificios" class="panel">
             <h2 class="text-3xl font-bold mb-6 text-cyan-400">Gestión de Edificios</h2>
-            </div>
+            <!-- Tu lógica de edificios permanece igual -->
+        </div>
         
         <div id="aptos" class="panel"><h2 class="text-3xl text-cyan-400">Apartamentos</h2></div>
         <div id="liquidacion" class="panel"><h2 class="text-3xl text-cyan-400">Liquidación</h2></div>
@@ -53,13 +58,13 @@
     <script>
         const ui = { 
             show: (id) => { 
-                // 1. Oculta todo, incluyendo el panel de bienvenida
+                // 1. Quitamos la clase 'active-panel' a TODO lo que sea .panel
                 document.querySelectorAll('.panel').forEach(p => p.classList.remove('active-panel')); 
-                // 2. Muestra el panel seleccionado
+                // 2. Activamos exclusivamente el panel que queremos
                 document.getElementById(id).classList.add('active-panel'); 
             }
         };
-        // ...resto del script de db igual...
+        // Tu lógica de db permanece igual
     </script>
 </body>
 </html>
