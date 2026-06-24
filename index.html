@@ -12,6 +12,7 @@
 </head>
 <body class="flex h-screen overflow-hidden">
 
+    <!-- PANEL LATERAL (Logo izquierdo intocable) -->
     <aside class="w-64 bg-slate-900 border-r border-cyan-900 p-6 flex flex-col gap-2">
         <div class="mb-8 text-center">
             <img src="https://i.ibb.co/VYz8GWMV/logo.jpg" alt="Logo" class="mx-auto mb-2 w-24">
@@ -23,145 +24,32 @@
         <button onclick="ui.show('liquidacion')" class="text-left px-4 py-2 hover:bg-slate-800 rounded">Liquidación</button>
     </aside>
 
+    <!-- ÁREA DE TRABAJO -->
     <main class="flex-1 p-8 overflow-y-auto relative">
+        <!-- MARCA CENTRAL (Inicio centrada, desaparece al navegar) -->
         <div id="bienvenida" class="panel active-panel flex items-center justify-center h-full">
-            <img src="https://i.ibb.co/nsh1g3dN/equityph.png" alt="Marca" class="w-2/3 opacity-90">
+            <img src="https://i.ibb.co/nsh1g3dN/equityph.png" alt="Marca" class="w-1/2 opacity-90">
         </div>
 
+        <!-- SECCIONES -->
         <div id="empresa" class="panel">
             <h2 class="text-3xl font-bold mb-6 text-cyan-400">Datos Empresa</h2>
-            <div class="grid grid-cols-2 gap-4 w-full bg-slate-800 p-6 rounded">
-                <input id="eNom" placeholder="Nombre Empresa" class="bg-slate-700 p-2 rounded">
-                <input id="eNit" placeholder="NIT" class="bg-slate-700 p-2 rounded">
-                <input id="eDir" placeholder="Dirección" class="bg-slate-700 p-2 rounded col-span-2">
-                <input id="eTel" placeholder="Teléfono" class="bg-slate-700 p-2 rounded">
-                <input id="eMail" placeholder="Correo" class="bg-slate-700 p-2 rounded">
-                <button onclick="db.saveEmp()" class="bg-cyan-600 p-2 col-span-2 rounded">Guardar Cambios</button>
-            </div>
+            <!-- ... contenido anterior ... -->
         </div>
 
-        <div id="edificios" class="panel">
-            <h2 class="text-3xl font-bold mb-6 text-cyan-400">Gestión de Edificios</h2>
-            <div class="mb-4 flex gap-2">
-                <button onclick="db.ed.add()" class="bg-green-600 px-6 py-2 rounded">Agregar</button>
-                <button onclick="db.ed.mod()" class="bg-yellow-600 px-6 py-2 rounded">Modificar</button>
-                <button onclick="db.ed.del()" class="bg-red-700 px-6 py-2 rounded">Borrar</button>
-                <button onclick="db.export('ed')" class="bg-blue-700 px-6 py-2 rounded">JSON</button>
-                <button onclick="db.exportExcel()" class="bg-emerald-700 px-6 py-2 rounded">Excel</button>
-            </div>
-            <div class="bg-slate-800 p-4 rounded grid grid-cols-2 gap-2 mb-6">
-                <input id="edCod" placeholder="Cod" class="bg-slate-700 p-2">
-                <input id="edNom" placeholder="Nombre" class="bg-slate-700 p-2">
-                <input id="edDir" placeholder="Dirección" class="bg-slate-700 p-2">
-                <input id="edTel" placeholder="Teléfono" class="bg-slate-700 p-2">
-                <input id="edMail" placeholder="Correo" class="bg-slate-700 p-2 col-span-2">
-            </div>
-            <table class="w-full text-left bg-slate-800 rounded text-sm">
-                <thead><tr class="border-b border-slate-700 text-cyan-300"><th class="p-3">Sel</th><th class="p-3">Cod</th><th class="p-3">Nombre</th><th class="p-3">Dirección</th><th class="p-3">Tel</th><th class="p-3">Correo</th><th class="p-3">Acción</th></tr></thead>
-                <tbody id="tbEdificios"></tbody>
-            </table>
-        </div>
-        
-        <div id="aptos" class="panel"><h2 class="text-3xl text-cyan-400">Apartamentos</h2></div>
-        <div id="liquidacion" class="panel"><h2 class="text-3xl text-cyan-400">Liquidación</h2></div>
-
-        <div id="modalVista" class="hidden absolute inset-0 bg-black/80 flex items-center justify-center z-50">
-            <div class="bg-slate-800 p-8 rounded-lg w-96 border border-cyan-500">
-                <div class="flex justify-between mb-4">
-                    <h3 class="text-xl font-bold text-cyan-400">Detalle del Edificio</h3>
-                    <button onclick="document.getElementById('modalVista').classList.add('hidden')" class="text-red-500 font-bold">X</button>
-                </div>
-                <div id="contenidoModal" class="space-y-2"></div>
-            </div>
-        </div>
+        <!-- ...resto de paneles... -->
     </main>
 
     <script>
-        const ui = { show: (id) => { 
-            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active-panel')); 
-            document.getElementById(id).classList.add('active-panel'); 
-        }};
-
-        const db = {
-            init: () => {
-                const emp = JSON.parse(localStorage.getItem('emp'));
-                if(emp) {
-                    document.getElementById('eNom').value = emp.n || '';
-                    document.getElementById('eNit').value = emp.nit || '';
-                    document.getElementById('eDir').value = emp.dir || '';
-                    document.getElementById('eTel').value = emp.tel || '';
-                    document.getElementById('eMail').value = emp.mail || '';
-                }
-                db.ed.render();
-            },
-            ed: {
-                add: () => {
-                    const c = document.getElementById('edCod'), n = document.getElementById('edNom'), d = document.getElementById('edDir'), t = document.getElementById('edTel'), m = document.getElementById('edMail');
-                    let list = JSON.parse(localStorage.getItem('ed')) || [];
-                    if(list.find(e => e.cod === c.value)) { alert("Error: Código duplicado"); return; }
-                    list.push({cod: c.value, nom: n.value, dir: d.value, tel: t.value, mail: m.value});
-                    localStorage.setItem('ed', JSON.stringify(list));
-                    [c,n,d,t,m].forEach(i => i.value = '');
-                    db.ed.render();
-                },
-                editar: (i) => {
-                    const e = JSON.parse(localStorage.getItem('ed'))[i];
-                    document.getElementById('edCod').value = e.cod;
-                    document.getElementById('edNom').value = e.nom;
-                    document.getElementById('edDir').value = e.dir;
-                    document.getElementById('edTel').value = e.tel;
-                    document.getElementById('edMail').value = e.mail;
-                },
-                mod: () => {
-                    const c = document.getElementById('edCod').value, n = document.getElementById('edNom').value, d = document.getElementById('edDir').value, t = document.getElementById('edTel').value, m = document.getElementById('edMail').value;
-                    let list = JSON.parse(localStorage.getItem('ed'));
-                    const i = list.findIndex(e => e.cod === c);
-                    if(i !== -1) { list[i] = {cod: c, nom: n, dir: d, tel: t, mail: m}; localStorage.setItem('ed', JSON.stringify(list)); db.ed.render(); }
-                },
-                render: () => {
-                    const list = JSON.parse(localStorage.getItem('ed')) || [];
-                    document.getElementById('tbEdificios').innerHTML = list.map((e, i) => 
-                        `<tr><td class="p-3"><input type="checkbox" class="edCheck" data-i="${i}"></td>
-                         <td class="p-3">${e.cod}</td><td class="p-3">${e.nom}</td><td class="p-3">${e.dir}</td>
-                         <td class="p-3">${e.tel}</td><td class="p-3">${e.mail}</td>
-                         <td class="p-3">
-                            <button onclick="db.ed.ver(${i})" class="mr-2">👁️</button>
-                            <button onclick="db.ed.editar(${i})">✏️</button>
-                         </td></tr>`).join('');
-                },
-                ver: (i) => {
-                    const e = JSON.parse(localStorage.getItem('ed'))[i];
-                    document.getElementById('contenidoModal').innerHTML = `<p><b>Cod:</b> ${e.cod}</p><p><b>Nombre:</b> ${e.nom}</p><p><b>Dir:</b> ${e.dir}</p><p><b>Tel:</b> ${e.tel}</p><p><b>Correo:</b> ${e.mail}</p>`;
-                    document.getElementById('modalVista').classList.remove('hidden');
-                },
-                del: () => {
-                    let list = JSON.parse(localStorage.getItem('ed'));
-                    document.querySelectorAll('.edCheck:checked').forEach(c => list.splice(c.dataset.i, 1));
-                    localStorage.setItem('ed', JSON.stringify(list));
-                    db.ed.render();
-                }
-            },
-            saveEmp: () => {
-                const data = { n: document.getElementById('eNom').value, nit: document.getElementById('eNit').value, dir: document.getElementById('eDir').value, tel: document.getElementById('eTel').value, mail: document.getElementById('eMail').value };
-                localStorage.setItem('emp', JSON.stringify(data));
-                alert("Empresa guardada");
-            },
-            exportExcel: () => {
-                const list = JSON.parse(localStorage.getItem('ed')) || [];
-                let html = '<table><tr><th>Cod</th><th>Nombre</th><th>Dirección</th><th>Teléfono</th><th>Correo</th></tr>';
-                list.forEach(e => html += `<tr><td>${e.cod}</td><td>${e.nom}</td><td>${e.dir}</td><td>${e.tel}</td><td>${e.mail}</td></tr>`);
-                const blob = new Blob([html], {type: "application/vnd.ms-excel"});
-                const a = document.createElement('a');
-                a.href = URL.createObjectURL(blob);
-                a.download = "edificios.xls"; a.click();
-            },
-            export: (key) => {
-                const a = document.createElement('a');
-                a.href = "data:text/json;charset=utf-8," + encodeURIComponent(localStorage.getItem(key));
-                a.download = key + ".json"; a.click();
+        const ui = { 
+            show: (id) => { 
+                // Selecciona TODOS los paneles, incluyendo el de bienvenida, y remueve la clase activa
+                document.querySelectorAll('.panel').forEach(p => p.classList.remove('active-panel')); 
+                // Activa solo el panel solicitado
+                document.getElementById(id).classList.add('active-panel'); 
             }
         };
-        window.onload = db.init;
+        // ...resto del script...
     </script>
 </body>
 </html>
