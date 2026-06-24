@@ -2,7 +2,7 @@
 <html lang="es" class="dark">
 <head>
     <meta charset="UTF-8">
-    <title>CanoServicios V2.0 - Plataforma Integral</title>
+    <title>EQUITY V2.0 - Plataforma Integral</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .panel { display: none; }
@@ -12,11 +12,10 @@
 </head>
 <body class="flex h-screen overflow-hidden">
 
-    <!-- PANEL LATERAL -->
     <aside class="w-64 bg-slate-900 border-r border-cyan-900 p-6 flex flex-col gap-2">
         <div class="mb-8 text-center">
-            <img src="https://via.placeholder.com/150x50?text=CanoServicios+V2.0" alt="Logo" class="mx-auto mb-2">
-            <h1 class="text-cyan-400 font-bold text-xl">CanoServicios V2.0</h1>
+            <img src="https://i.ibb.co/VYz8GWMV/logo.jpg" alt="Logo" class="mx-auto mb-2 w-24">
+            <h1 class="text-cyan-400 font-bold text-xl">EQUITY V2.0</h1>
         </div>
         <button onclick="ui.show('empresa')" class="text-left px-4 py-2 hover:bg-slate-800 rounded">Datos Empresa</button>
         <button onclick="ui.show('edificios')" class="text-left px-4 py-2 hover:bg-slate-800 rounded">Gestión Edificios</button>
@@ -24,9 +23,7 @@
         <button onclick="ui.show('liquidacion')" class="text-left px-4 py-2 hover:bg-slate-800 rounded">Liquidación</button>
     </aside>
 
-    <!-- ÁREA DE TRABAJO -->
     <main class="flex-1 p-8 overflow-y-auto relative">
-        <!-- MODAL DE VISTA -->
         <div id="modalVista" class="hidden absolute inset-0 bg-black/80 flex items-center justify-center z-50">
             <div class="bg-slate-800 p-8 rounded-lg w-96 border border-cyan-500">
                 <div class="flex justify-between mb-4">
@@ -37,10 +34,13 @@
             </div>
         </div>
 
-        <!-- EMPRESA -->
-        <div id="empresa" class="panel active-panel">
+        <div id="bienvenida" class="panel active-panel flex items-center justify-center h-full">
+            <img src="https://i.ibb.co/nsh1g3dN/equityph.png" alt="Marca" class="opacity-80">
+        </div>
+
+        <div id="empresa" class="panel">
             <h2 class="text-3xl font-bold mb-6 text-cyan-400">Datos Empresa</h2>
-            <div class="grid grid-cols-2 gap-4 max-w-2xl bg-slate-800 p-6 rounded">
+            <div class="grid grid-cols-2 gap-4 w-full bg-slate-800 p-6 rounded">
                 <input id="eNom" placeholder="Nombre Empresa" class="bg-slate-700 p-2 rounded">
                 <input id="eNit" placeholder="NIT" class="bg-slate-700 p-2 rounded">
                 <input id="eDir" placeholder="Dirección" class="bg-slate-700 p-2 rounded col-span-2">
@@ -50,7 +50,6 @@
             </div>
         </div>
 
-        <!-- EDIFICIOS -->
         <div id="edificios" class="panel">
             <h2 class="text-3xl font-bold mb-6 text-cyan-400">Gestión de Edificios</h2>
             <div class="mb-4 flex gap-2">
@@ -67,8 +66,8 @@
                 <input id="edTel" placeholder="Teléfono" class="bg-slate-700 p-2">
                 <input id="edMail" placeholder="Correo" class="bg-slate-700 p-2 col-span-2">
             </div>
-            <table class="w-full text-left bg-slate-800 rounded">
-                <thead><tr class="border-b border-slate-700 text-cyan-300"><th class="p-3">Sel</th><th class="p-3">Cod</th><th class="p-3">Nombre</th><th class="p-3">Acción</th></tr></thead>
+            <table class="w-full text-left bg-slate-800 rounded text-sm">
+                <thead><tr class="border-b border-slate-700 text-cyan-300"><th class="p-3">Sel</th><th class="p-3">Cod</th><th class="p-3">Nombre</th><th class="p-3">Dirección</th><th class="p-3">Tel</th><th class="p-3">Correo</th><th class="p-3">Acción</th></tr></thead>
                 <tbody id="tbEdificios"></tbody>
             </table>
         </div>
@@ -105,13 +104,6 @@
                     [c,n,d,t,m].forEach(i => i.value = '');
                     db.ed.render();
                 },
-                ver: (i) => {
-                    const e = JSON.parse(localStorage.getItem('ed'))[i];
-                    document.getElementById('contenidoModal').innerHTML = `
-                        <p><b>Cod:</b> ${e.cod}</p><p><b>Nombre:</b> ${e.nom}</p>
-                        <p><b>Dir:</b> ${e.dir}</p><p><b>Tel:</b> ${e.tel}</p><p><b>Correo:</b> ${e.mail}</p>`;
-                    document.getElementById('modalVista').classList.remove('hidden');
-                },
                 editar: (i) => {
                     const e = JSON.parse(localStorage.getItem('ed'))[i];
                     document.getElementById('edCod').value = e.cod;
@@ -130,11 +122,17 @@
                     const list = JSON.parse(localStorage.getItem('ed')) || [];
                     document.getElementById('tbEdificios').innerHTML = list.map((e, i) => 
                         `<tr><td class="p-3"><input type="checkbox" class="edCheck" data-i="${i}"></td>
-                         <td class="p-3">${e.cod}</td><td class="p-3">${e.nom}</td>
+                         <td class="p-3">${e.cod}</td><td class="p-3">${e.nom}</td><td class="p-3">${e.dir}</td>
+                         <td class="p-3">${e.tel}</td><td class="p-3">${e.mail}</td>
                          <td class="p-3">
-                            <button onclick="db.ed.ver(${i})" class="text-blue-400 mr-2">Vista</button>
-                            <button onclick="db.ed.editar(${i})" class="text-yellow-400">Editar</button>
+                            <button onclick="db.ed.ver(${i})" class="mr-2">👁️</button>
+                            <button onclick="db.ed.editar(${i})">✏️</button>
                          </td></tr>`).join('');
+                },
+                ver: (i) => {
+                    const e = JSON.parse(localStorage.getItem('ed'))[i];
+                    document.getElementById('contenidoModal').innerHTML = `<p><b>Cod:</b> ${e.cod}</p><p><b>Nombre:</b> ${e.nom}</p><p><b>Dir:</b> ${e.dir}</p><p><b>Tel:</b> ${e.tel}</p><p><b>Correo:</b> ${e.mail}</p>`;
+                    document.getElementById('modalVista').classList.remove('hidden');
                 },
                 del: () => {
                     let list = JSON.parse(localStorage.getItem('ed'));
