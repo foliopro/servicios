@@ -15,8 +15,8 @@
     <!-- PANEL LATERAL -->
     <aside class="w-64 bg-slate-900 border-r border-cyan-900 p-6 flex flex-col gap-2">
         <div class="mb-8 text-center">
-            <!-- Logo Grande -->
-            <img src="https://i.ibb.co/VYz8GWMV/logo.jpg" alt="Logo" class="mx-auto mb-4 w-32 shadow-lg">
+            <!-- Logo ampliado al doble -->
+            <img src="https://i.ibb.co/VYz8GWMV/logo.jpg" alt="Logo" class="mx-auto mb-4 w-64 shadow-xl">
             <h1 class="text-cyan-400 font-bold text-xl">EQUITY V2.0</h1>
         </div>
         <button onclick="ui.show('empresa')" class="text-left px-4 py-2 hover:bg-slate-800 rounded">Datos Empresa</button>
@@ -26,7 +26,7 @@
     </aside>
 
     <main class="flex-1 p-8 overflow-y-auto relative">
-        <!-- MARCA CENTRAL (BIENVENIDA) -->
+        <!-- MARCA CENTRAL (SOLO INICIAL) -->
         <div id="bienvenida" class="panel active-panel flex items-center justify-center h-full">
             <img src="https://i.ibb.co/nsh1g3dN/equityph.png" alt="Marca" class="w-96 opacity-90">
         </div>
@@ -83,6 +83,7 @@
 
     <script>
         const ui = { show: (id) => { 
+            // Oculta todos, incluyendo 'bienvenida'
             document.querySelectorAll('.panel').forEach(p => p.classList.remove('active-panel')); 
             document.getElementById(id).classList.add('active-panel'); 
         }};
