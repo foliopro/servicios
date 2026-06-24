@@ -12,6 +12,7 @@
 </head>
 <body class="flex h-screen overflow-hidden">
 
+    <!-- PANEL LATERAL -->
     <aside class="w-64 bg-slate-900 border-r border-cyan-900 p-6 flex flex-col gap-2 z-20">
         <div class="mb-8 text-center">
             <img src="https://i.ibb.co/VYz8GWMV/logo.jpg" alt="Logo" class="mx-auto mb-2 w-24">
@@ -28,15 +29,30 @@
             <img src="https://i.ibb.co/nsh1g3dN/equityph.png" class="w-1/2 max-w-xl">
         </div>
 
+        <div id="modalVista" class="hidden absolute inset-0 bg-black/80 flex items-center justify-center z-50">
+            <div class="bg-slate-800 p-8 rounded-lg w-96 border border-cyan-500">
+                <div class="flex justify-between mb-4">
+                    <h3 class="text-xl font-bold text-cyan-400">Detalle</h3>
+                    <button onclick="document.getElementById('modalVista').classList.add('hidden')" class="text-red-500 font-bold">X</button>
+                </div>
+                <div id="contenidoModal" class="space-y-2"></div>
+            </div>
+        </div>
+
+        <!-- EMPRESA -->
         <div id="empresa" class="panel">
             <h2 class="text-3xl font-bold mb-6 text-cyan-400">Datos Empresa</h2>
             <div class="grid grid-cols-2 gap-4 bg-slate-800 p-6 rounded">
                 <input id="eNom" placeholder="Nombre Empresa" class="bg-slate-700 p-2 rounded">
                 <input id="eNit" placeholder="NIT" class="bg-slate-700 p-2 rounded">
+                <input id="eDir" placeholder="Dirección" class="bg-slate-700 p-2 rounded col-span-2">
+                <input id="eTel" placeholder="Teléfono" class="bg-slate-700 p-2 rounded">
+                <input id="eMail" placeholder="Correo" class="bg-slate-700 p-2 rounded">
                 <button onclick="db.saveEmp()" class="bg-cyan-600 p-2 col-span-2 rounded">Guardar Cambios</button>
             </div>
         </div>
 
+        <!-- EDIFICIOS -->
         <div id="edificios" class="panel">
             <h2 class="text-3xl font-bold mb-6 text-cyan-400">Gestión de Edificios</h2>
             <div class="mb-4 flex gap-2 flex-wrap">
@@ -56,94 +72,88 @@
                 <input id="edMail" placeholder="Correo" class="bg-slate-700 p-2 col-span-2">
             </div>
             <table class="w-full text-left bg-slate-800 rounded text-sm">
-                <thead><tr class="border-b border-slate-700 text-cyan-300"><th class="p-3">Sel</th><th class="p-3">Cod</th><th class="p-3">Nombre</th><th class="p-3">Acción</th></tr></thead>
+                <thead><tr class="border-b border-slate-700 text-cyan-300"><th class="p-3">Sel</th><th class="p-3">Cod</th><th class="p-3">Nombre</th><th class="p-3">Dirección</th><th class="p-3">Tel</th><th class="p-3">Correo</th><th class="p-3">Acción</th></tr></thead>
                 <tbody id="tbEdificios"></tbody>
             </table>
         </div>
-
-        <div id="aptos" class="panel">
-            <h2 class="text-3xl font-bold mb-6 text-cyan-400">Gestión de Apartamentos</h2>
-            <select id="selEdificio" onchange="db.aptos.render()" class="bg-slate-700 p-2 mb-4 w-full rounded"></select>
-            <div class="mb-4 flex gap-2 flex-wrap">
-                <button onclick="db.aptos.add()" class="bg-green-600 px-4 py-2 rounded">Agregar</button>
-                <button onclick="db.aptos.mod()" class="bg-yellow-600 px-4 py-2 rounded">Modificar</button>
-                <button onclick="db.aptos.del()" class="bg-red-700 px-4 py-2 rounded">Borrar</button>
-            </div>
-            <div class="bg-slate-800 p-4 rounded grid grid-cols-2 gap-2 mb-6 text-sm">
-                <input id="apCod" placeholder="Cod Apto" class="bg-slate-700 p-2" onblur="db.aptos.validar()">
-                <select id="apTipo" class="bg-slate-700 p-2"><option>Residencial</option><option>Comercial</option><option>Otro</option></select>
-                <input id="apNom" placeholder="Nombre" class="bg-slate-700 p-2">
-                <input id="apID" placeholder="Num ID" class="bg-slate-700 p-2">
-                <input id="apDir" placeholder="Dirección" class="bg-slate-700 p-2">
-                <input id="apCiu" placeholder="Ciudad" class="bg-slate-700 p-2">
-            </div>
-            <table class="w-full text-left bg-slate-800 rounded text-sm">
-                <thead><tr class="border-b border-slate-700 text-cyan-300"><th class="p-3">Sel</th><th class="p-3">Cod</th><th class="p-3">Nombre</th><th class="p-3">Acción</th></tr></thead>
-                <tbody id="tbAptos"></tbody>
-            </table>
-        </div>
+        
+        <div id="aptos" class="panel"><h2 class="text-3xl text-cyan-400">Apartamentos</h2></div>
+        <div id="liquidacion" class="panel"><h2 class="text-3xl text-cyan-400">Liquidación</h2></div>
     </main>
 
     <script>
+        function limpiarEdificios() { ['edCod', 'edNom', 'edDir', 'edTel', 'edMail'].forEach(id => document.getElementById(id).value = ''); }
         function show(id) {
             document.getElementById('marca-inicio').style.display = 'none';
             document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
             document.getElementById(id).classList.add('active');
-            if(id === 'edificios') { ['edCod','edNom','edDir','edTel','edMail'].forEach(i => document.getElementById(i).value = ''); }
-            if(id === 'aptos') { db.aptos.initSelect(); }
+            if (id === 'edificios') limpiarEdificios();
         }
 
         const db = {
+            init: () => {
+                const emp = JSON.parse(localStorage.getItem('emp'));
+                if(emp) {
+                    document.getElementById('eNom').value = emp.n || '';
+                    document.getElementById('eNit').value = emp.nit || '';
+                    document.getElementById('eDir').value = emp.dir || '';
+                    document.getElementById('eTel').value = emp.tel || '';
+                    document.getElementById('eMail').value = emp.mail || '';
+                }
+                db.ed.render();
+            },
             ed: {
                 add: () => {
                     const c = document.getElementById('edCod').value;
-                    if(!c) { alert("¡El código es obligatorio!"); return; }
+                    if(!c) { alert("Error: No se puede agregar registros en blanco"); return; }
                     let list = JSON.parse(localStorage.getItem('ed')) || [];
-                    list.push({cod: c, nom: document.getElementById('edNom').value});
+                    if(list.find(e => e.cod === c)) { alert("Error: Código duplicado"); return; }
+                    list.push({cod: c, nom: document.getElementById('edNom').value, dir: document.getElementById('edDir').value, tel: document.getElementById('edTel').value, mail: document.getElementById('edMail').value});
                     localStorage.setItem('ed', JSON.stringify(list));
-                    db.ed.render();
+                    limpiarEdificios(); db.ed.render();
                 },
                 render: () => {
                     const list = JSON.parse(localStorage.getItem('ed')) || [];
-                    document.getElementById('tbEdificios').innerHTML = list.map((e,i) => `<tr><td class="p-3"><input type="checkbox"></td><td>${e.cod}</td><td>${e.nom}</td><td><button onclick="db.ed.editar(${i})">✏️</button></td></tr>`).join('');
+                    document.getElementById('tbEdificios').innerHTML = list.map((e, i) => 
+                        `<tr><td class="p-3"><input type="checkbox" class="edCheck" data-i="${i}"></td>
+                         <td class="p-3">${e.cod}</td><td class="p-3">${e.nom}</td><td class="p-3">${e.dir}</td>
+                         <td class="p-3">${e.tel}</td><td class="p-3">${e.mail}</td>
+                         <td class="p-3">
+                            <button onclick="db.ed.ver(${i})" class="mr-2">👁️</button>
+                            <button onclick="db.ed.editar(${i})">✏️</button>
+                         </td></tr>`).join('');
+                },
+                editar: (i) => {
+                    const e = JSON.parse(localStorage.getItem('ed'))[i];
+                    document.getElementById('edCod').value = e.cod; document.getElementById('edNom').value = e.nom; document.getElementById('edDir').value = e.dir; document.getElementById('edTel').value = e.tel; document.getElementById('edMail').value = e.mail;
+                },
+                mod: () => {
+                    const c = document.getElementById('edCod').value;
+                    let list = JSON.parse(localStorage.getItem('ed'));
+                    const i = list.findIndex(e => e.cod === c);
+                    if(i !== -1) { list[i] = {cod: c, nom: document.getElementById('edNom').value, dir: document.getElementById('edDir').value, tel: document.getElementById('edTel').value, mail: document.getElementById('edMail').value}; localStorage.setItem('ed', JSON.stringify(list)); limpiarEdificios(); db.ed.render(); }
+                },
+                del: () => {
+                    let list = JSON.parse(localStorage.getItem('ed'));
+                    document.querySelectorAll('.edCheck:checked').forEach(c => list.splice(c.dataset.i, 1));
+                    localStorage.setItem('ed', JSON.stringify(list)); db.ed.render();
+                },
+                ver: (i) => {
+                    const e = JSON.parse(localStorage.getItem('ed'))[i];
+                    document.getElementById('contenidoModal').innerHTML = `<p><b>Cod:</b> ${e.cod}</p><p><b>Nombre:</b> ${e.nom}</p><p><b>Dir:</b> ${e.dir}</p><p><b>Tel:</b> ${e.tel}</p><p><b>Correo:</b> ${e.mail}</p>`;
+                    document.getElementById('modalVista').classList.remove('hidden');
                 }
             },
-            aptos: {
-                initSelect: () => {
-                    const list = JSON.parse(localStorage.getItem('ed')) || [];
-                    document.getElementById('selEdificio').innerHTML = '<option value="">Seleccione Edificio...</option>' + list.map(e => `<option value="${e.cod}">${e.nom}</option>`).join('');
-                },
-                validar: () => {
-                    const edId = document.getElementById('selEdificio').value;
-                    const cod = document.getElementById('apCod').value;
-                    const list = JSON.parse(localStorage.getItem('aptos_' + edId)) || [];
-                    if(list.find(a => a.cod === cod)) alert("¡Este código ya existe en este edificio!");
-                },
-                add: () => {
-                    const edId = document.getElementById('selEdificio').value;
-                    const cod = document.getElementById('apCod').value;
-                    if(!edId || !cod) { alert("¡Faltan datos obligatorios!"); return; }
-                    let list = JSON.parse(localStorage.getItem('aptos_' + edId)) || [];
-                    list.push({cod: cod, nom: document.getElementById('apNom').value});
-                    localStorage.setItem('aptos_' + edId, JSON.stringify(list));
-                    db.aptos.render();
-                },
-                render: () => {
-                    const edId = document.getElementById('selEdificio').value;
-                    const list = JSON.parse(localStorage.getItem('aptos_' + edId)) || [];
-                    document.getElementById('tbAptos').innerHTML = list.map((a,i) => `<tr><td class="p-3"><input type="checkbox"></td><td>${a.cod}</td><td>${a.nom}</td><td></td></tr>`).join('');
-                }
+            saveEmp: () => {
+                const data = { n: document.getElementById('eNom').value, nit: document.getElementById('eNit').value, dir: document.getElementById('eDir').value, tel: document.getElementById('eTel').value, mail: document.getElementById('eMail').value };
+                localStorage.setItem('emp', JSON.stringify(data));
+                alert("Empresa guardada");
             },
-            importData: (e, key) => {
-                const reader = new FileReader();
-                reader.onload = (event) => { localStorage.setItem(key, event.target.result); db.ed.render(); };
-                reader.readAsText(e.target.files[0]);
-            },
-            saveEmp: () => alert("Empresa guardada"),
-            export: (key) => alert("Exportando JSON..."),
-            exportExcel: () => alert("Exportando Excel...")
+            export: (key) => { const a = document.createElement('a'); a.href = "data:text/json;charset=utf-8," + encodeURIComponent(localStorage.getItem(key)); a.download = key + ".json"; a.click(); },
+            importData: (e, key) => { const reader = new FileReader(); reader.onload = (event) => { localStorage.setItem(key, event.target.result); db.ed.render(); }; reader.readAsText(e.target.files[0]); },
+            exportExcel: () => { alert("Exportando..."); }
         };
-        window.onload = () => { db.ed.render(); };
+        window.onload = db.init;
     </script>
 </body>
 </html>
