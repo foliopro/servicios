@@ -12,6 +12,7 @@
 </head>
 <body class="flex h-screen overflow-hidden">
 
+    <!-- PANEL LATERAL -->
     <aside class="w-64 bg-slate-900 border-r border-cyan-900 p-6 flex flex-col gap-2">
         <div class="mb-8 text-center">
             <img src="https://via.placeholder.com/150x50?text=CanoServicios+V2.0" alt="Logo" class="mx-auto mb-2">
@@ -24,6 +25,7 @@
     </aside>
 
     <main class="flex-1 p-8 overflow-y-auto">
+        <!-- EMPRESA -->
         <div id="empresa" class="panel active-panel">
             <h2 class="text-3xl font-bold mb-6 text-cyan-400">Datos Empresa</h2>
             <div class="grid grid-cols-2 gap-4 max-w-2xl bg-slate-800 p-6 rounded">
@@ -36,6 +38,7 @@
             </div>
         </div>
 
+        <!-- EDIFICIOS (TABLA CON TODOS LOS CAMPOS) -->
         <div id="edificios" class="panel">
             <h2 class="text-3xl font-bold mb-6 text-cyan-400">Gestión de Edificios</h2>
             <div class="mb-4 flex gap-2">
@@ -43,17 +46,22 @@
                 <button onclick="db.ed.mod()" class="bg-yellow-600 px-6 py-2 rounded">Modificar</button>
                 <button onclick="db.ed.del()" class="bg-red-700 px-6 py-2 rounded">Borrar</button>
                 <button onclick="db.export('ed')" class="bg-blue-700 px-6 py-2 rounded">JSON</button>
-                <button onclick="db.exportExcel()" class="bg-emerald-700 px-6 py-2 rounded">Excel</button>
+                <button onclick="db.exportExcel()" class="bg-emerald-700 px-6 py-2 rounded">Exportar Excel</button>
             </div>
             <div class="bg-slate-800 p-4 rounded grid grid-cols-2 gap-2 mb-6">
-                <input id="edCod" placeholder="Cod Edificio" class="bg-slate-700 p-2">
-                <input id="edNom" placeholder="Nombre Edificio" class="bg-slate-700 p-2">
+                <input id="edCod" placeholder="Cod" class="bg-slate-700 p-2">
+                <input id="edNom" placeholder="Nombre" class="bg-slate-700 p-2">
                 <input id="edDir" placeholder="Dirección" class="bg-slate-700 p-2">
                 <input id="edTel" placeholder="Teléfono" class="bg-slate-700 p-2">
                 <input id="edMail" placeholder="Correo" class="bg-slate-700 p-2 col-span-2">
             </div>
             <table class="w-full text-left bg-slate-800 rounded">
-                <thead><tr class="border-b border-slate-700"><th class="p-3">Sel</th><th class="p-3">Cod</th><th class="p-3">Nombre</th><th class="p-3">Acción</th></tr></thead>
+                <thead>
+                    <tr class="border-b border-slate-700 text-cyan-300">
+                        <th class="p-3">Sel</th><th class="p-3">Cod</th><th class="p-3">Nombre</th>
+                        <th class="p-3">Dirección</th><th class="p-3">Teléfono</th><th class="p-3">Correo</th><th class="p-3">Acción</th>
+                    </tr>
+                </thead>
                 <tbody id="tbEdificios"></tbody>
             </table>
         </div>
@@ -91,8 +99,7 @@
                     db.ed.render();
                 },
                 editar: (i) => {
-                    const list = JSON.parse(localStorage.getItem('ed'));
-                    const e = list[i];
+                    const e = JSON.parse(localStorage.getItem('ed'))[i];
                     document.getElementById('edCod').value = e.cod;
                     document.getElementById('edNom').value = e.nom;
                     document.getElementById('edDir').value = e.dir;
@@ -108,7 +115,10 @@
                 render: () => {
                     const list = JSON.parse(localStorage.getItem('ed')) || [];
                     document.getElementById('tbEdificios').innerHTML = list.map((e, i) => 
-                        `<tr><td class="p-3"><input type="checkbox" class="edCheck" data-i="${i}"></td><td class="p-3">${e.cod}</td><td class="p-3">${e.nom}</td><td class="p-3"><button onclick="db.ed.editar(${i})" class="text-yellow-400">Editar</button></td></tr>`).join('');
+                        `<tr><td class="p-3"><input type="checkbox" class="edCheck" data-i="${i}"></td>
+                         <td class="p-3">${e.cod}</td><td class="p-3">${e.nom}</td><td class="p-3">${e.dir}</td>
+                         <td class="p-3">${e.tel}</td><td class="p-3">${e.mail}</td>
+                         <td class="p-3"><button onclick="db.ed.editar(${i})" class="text-yellow-400">Editar</button></td></tr>`).join('');
                 },
                 del: () => {
                     let list = JSON.parse(localStorage.getItem('ed'));
@@ -124,7 +134,7 @@
             },
             exportExcel: () => {
                 const list = JSON.parse(localStorage.getItem('ed')) || [];
-                let html = '<table><tr><th>Cod</th><th>Nombre</th><th>Dirección</th><th>Tel</th><th>Correo</th></tr>';
+                let html = '<table><tr><th>Cod</th><th>Nombre</th><th>Dirección</th><th>Teléfono</th><th>Correo</th></tr>';
                 list.forEach(e => html += `<tr><td>${e.cod}</td><td>${e.nom}</td><td>${e.dir}</td><td>${e.tel}</td><td>${e.mail}</td></tr>`);
                 const blob = new Blob([html], {type: "application/vnd.ms-excel"});
                 const a = document.createElement('a');
