@@ -24,7 +24,19 @@
         <button onclick="ui.show('liquidacion')" class="text-left px-4 py-2 hover:bg-slate-800 rounded">Liquidación</button>
     </aside>
 
-    <main class="flex-1 p-8 overflow-y-auto">
+    <!-- ÁREA DE TRABAJO -->
+    <main class="flex-1 p-8 overflow-y-auto relative">
+        <!-- MODAL DE VISTA -->
+        <div id="modalVista" class="hidden absolute inset-0 bg-black/80 flex items-center justify-center z-50">
+            <div class="bg-slate-800 p-8 rounded-lg w-96 border border-cyan-500">
+                <div class="flex justify-between mb-4">
+                    <h3 class="text-xl font-bold text-cyan-400">Detalle del Edificio</h3>
+                    <button onclick="document.getElementById('modalVista').classList.add('hidden')" class="text-red-500 font-bold">X</button>
+                </div>
+                <div id="contenidoModal" class="space-y-2"></div>
+            </div>
+        </div>
+
         <!-- EMPRESA -->
         <div id="empresa" class="panel active-panel">
             <h2 class="text-3xl font-bold mb-6 text-cyan-400">Datos Empresa</h2>
@@ -38,7 +50,7 @@
             </div>
         </div>
 
-        <!-- EDIFICIOS (TABLA CON TODOS LOS CAMPOS) -->
+        <!-- EDIFICIOS -->
         <div id="edificios" class="panel">
             <h2 class="text-3xl font-bold mb-6 text-cyan-400">Gestión de Edificios</h2>
             <div class="mb-4 flex gap-2">
@@ -46,7 +58,7 @@
                 <button onclick="db.ed.mod()" class="bg-yellow-600 px-6 py-2 rounded">Modificar</button>
                 <button onclick="db.ed.del()" class="bg-red-700 px-6 py-2 rounded">Borrar</button>
                 <button onclick="db.export('ed')" class="bg-blue-700 px-6 py-2 rounded">JSON</button>
-                <button onclick="db.exportExcel()" class="bg-emerald-700 px-6 py-2 rounded">Exportar Excel</button>
+                <button onclick="db.exportExcel()" class="bg-emerald-700 px-6 py-2 rounded">Excel</button>
             </div>
             <div class="bg-slate-800 p-4 rounded grid grid-cols-2 gap-2 mb-6">
                 <input id="edCod" placeholder="Cod" class="bg-slate-700 p-2">
@@ -56,12 +68,7 @@
                 <input id="edMail" placeholder="Correo" class="bg-slate-700 p-2 col-span-2">
             </div>
             <table class="w-full text-left bg-slate-800 rounded">
-                <thead>
-                    <tr class="border-b border-slate-700 text-cyan-300">
-                        <th class="p-3">Sel</th><th class="p-3">Cod</th><th class="p-3">Nombre</th>
-                        <th class="p-3">Dirección</th><th class="p-3">Teléfono</th><th class="p-3">Correo</th><th class="p-3">Acción</th>
-                    </tr>
-                </thead>
+                <thead><tr class="border-b border-slate-700 text-cyan-300"><th class="p-3">Sel</th><th class="p-3">Cod</th><th class="p-3">Nombre</th><th class="p-3">Acción</th></tr></thead>
                 <tbody id="tbEdificios"></tbody>
             </table>
         </div>
@@ -95,8 +102,15 @@
                     if(list.find(e => e.cod === c.value)) { alert("Error: Código duplicado"); return; }
                     list.push({cod: c.value, nom: n.value, dir: d.value, tel: t.value, mail: m.value});
                     localStorage.setItem('ed', JSON.stringify(list));
-                    c.value = ''; n.value = ''; d.value = ''; t.value = ''; m.value = '';
+                    [c,n,d,t,m].forEach(i => i.value = '');
                     db.ed.render();
+                },
+                ver: (i) => {
+                    const e = JSON.parse(localStorage.getItem('ed'))[i];
+                    document.getElementById('contenidoModal').innerHTML = `
+                        <p><b>Cod:</b> ${e.cod}</p><p><b>Nombre:</b> ${e.nom}</p>
+                        <p><b>Dir:</b> ${e.dir}</p><p><b>Tel:</b> ${e.tel}</p><p><b>Correo:</b> ${e.mail}</p>`;
+                    document.getElementById('modalVista').classList.remove('hidden');
                 },
                 editar: (i) => {
                     const e = JSON.parse(localStorage.getItem('ed'))[i];
@@ -116,9 +130,11 @@
                     const list = JSON.parse(localStorage.getItem('ed')) || [];
                     document.getElementById('tbEdificios').innerHTML = list.map((e, i) => 
                         `<tr><td class="p-3"><input type="checkbox" class="edCheck" data-i="${i}"></td>
-                         <td class="p-3">${e.cod}</td><td class="p-3">${e.nom}</td><td class="p-3">${e.dir}</td>
-                         <td class="p-3">${e.tel}</td><td class="p-3">${e.mail}</td>
-                         <td class="p-3"><button onclick="db.ed.editar(${i})" class="text-yellow-400">Editar</button></td></tr>`).join('');
+                         <td class="p-3">${e.cod}</td><td class="p-3">${e.nom}</td>
+                         <td class="p-3">
+                            <button onclick="db.ed.ver(${i})" class="text-blue-400 mr-2">Vista</button>
+                            <button onclick="db.ed.editar(${i})" class="text-yellow-400">Editar</button>
+                         </td></tr>`).join('');
                 },
                 del: () => {
                     let list = JSON.parse(localStorage.getItem('ed'));
