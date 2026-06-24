@@ -15,7 +15,8 @@
     <!-- PANEL LATERAL -->
     <aside class="w-64 bg-slate-900 border-r border-cyan-900 p-6 flex flex-col gap-2">
         <div class="mb-8 text-center">
-            <img src="https://i.ibb.co/nsh1g3dN/equityph.png" alt="Logo" class="mx-auto mb-2 w-24">
+            <!-- Logo Grande -->
+            <img src="https://i.ibb.co/VYz8GWMV/logo.jpg" alt="Logo" class="mx-auto mb-4 w-32 shadow-lg">
             <h1 class="text-cyan-400 font-bold text-xl">EQUITY V2.0</h1>
         </div>
         <button onclick="ui.show('empresa')" class="text-left px-4 py-2 hover:bg-slate-800 rounded">Datos Empresa</button>
@@ -25,23 +26,12 @@
     </aside>
 
     <main class="flex-1 p-8 overflow-y-auto relative">
-        <!-- MARCA INICIAL -->
+        <!-- MARCA CENTRAL (BIENVENIDA) -->
         <div id="bienvenida" class="panel active-panel flex items-center justify-center h-full">
-            <img src="https://i.ibb.co/nsh1g3dN/equityph.png" alt="Marca" class="opacity-50 w-64">
+            <img src="https://i.ibb.co/nsh1g3dN/equityph.png" alt="Marca" class="w-96 opacity-90">
         </div>
 
-        <!-- MODAL VISTA -->
-        <div id="modalVista" class="hidden absolute inset-0 bg-black/80 flex items-center justify-center z-50">
-            <div class="bg-slate-800 p-8 rounded-lg w-96 border border-cyan-500">
-                <div class="flex justify-between mb-4">
-                    <h3 class="text-xl font-bold text-cyan-400">Detalle del Edificio</h3>
-                    <button onclick="document.getElementById('modalVista').classList.add('hidden')" class="text-red-500 font-bold">X</button>
-                </div>
-                <div id="contenidoModal" class="space-y-2"></div>
-            </div>
-        </div>
-
-        <!-- EMPRESA -->
+        <!-- SECCIONES -->
         <div id="empresa" class="panel">
             <h2 class="text-3xl font-bold mb-6 text-cyan-400">Datos Empresa</h2>
             <div class="grid grid-cols-2 gap-4 w-full bg-slate-800 p-6 rounded">
@@ -54,7 +44,6 @@
             </div>
         </div>
 
-        <!-- EDIFICIOS -->
         <div id="edificios" class="panel">
             <h2 class="text-3xl font-bold mb-6 text-cyan-400">Gestión de Edificios</h2>
             <div class="mb-4 flex gap-2">
@@ -79,6 +68,17 @@
         
         <div id="aptos" class="panel"><h2 class="text-3xl text-cyan-400">Apartamentos</h2></div>
         <div id="liquidacion" class="panel"><h2 class="text-3xl text-cyan-400">Liquidación</h2></div>
+
+        <!-- MODAL -->
+        <div id="modalVista" class="hidden absolute inset-0 bg-black/80 flex items-center justify-center z-50">
+            <div class="bg-slate-800 p-8 rounded-lg w-96 border border-cyan-500">
+                <div class="flex justify-between mb-4">
+                    <h3 class="text-xl font-bold text-cyan-400">Detalle del Edificio</h3>
+                    <button onclick="document.getElementById('modalVista').classList.add('hidden')" class="text-red-500 font-bold">X</button>
+                </div>
+                <div id="contenidoModal" class="space-y-2"></div>
+            </div>
+        </div>
     </main>
 
     <script>
