@@ -10,9 +10,17 @@
         body { background-color: #0f172a; color: #e2e8f0; }
     </style>
 </head>
+
+<style>
+@media print {
+    body * { visibility: hidden; }
+    #reportePDF, #reportePDF * { visibility: visible; }
+    #reportePDF { position: absolute; left: 0; top: 0; width: 100%; }
+}
+</style>
+
 <body class="flex h-screen overflow-hidden">
 
-    <!-- PANEL LATERAL -->
     <aside class="w-64 bg-slate-900 border-r border-cyan-900 p-6 flex flex-col gap-2 z-20">
         <div class="mb-8 text-center">
             <img src="https://i.ibb.co/VYz8GWMV/logo.jpg" alt="Logo" class="mx-auto mb-2 w-24">
@@ -23,15 +31,21 @@
         <button onclick="show('aptos')" class="block w-full text-left px-4 py-2 hover:bg-slate-800 rounded">Apartamentos</button>
         <button onclick="show('liquidacion')" class="block w-full text-left px-4 py-2 hover:bg-slate-800 rounded">Liquidación</button>
     </aside>
-
     <main class="flex-1 p-8 overflow-y-auto relative">
         <div id="marca-inicio" class="absolute inset-0 flex items-center justify-center bg-[#0f172a] z-50">
             <img src="https://i.ibb.co/nsh1g3dN/equityph.png" class="w-1/2 max-w-xl">
         </div>
 
-        <!-- ============================================= -->
-        <!-- AQUÍ EMPIEZA MÓDULO EMPRESA -->
-        <!-- ============================================= -->
+        <div id="modalVista" class="hidden absolute inset-0 bg-black/80 flex items-center justify-center z-50">
+            <div class="bg-slate-800 p-8 rounded-lg w-96 border border-cyan-500">
+                <div class="flex justify-between mb-4">
+                    <h3 class="text-xl font-bold text-cyan-400">Detalle</h3>
+                    <button onclick="document.getElementById('modalVista').classList.add('hidden')" class="text-red-500 font-bold">X</button>
+                </div>
+                <div id="contenidoModal" class="space-y-2"></div>
+            </div>
+        </div>
+
         <div id="empresa" class="panel">
             <h2 class="text-3xl font-bold mb-6 text-cyan-400">Datos Empresa</h2>
             <div class="grid grid-cols-2 gap-4 bg-slate-800 p-6 rounded">
@@ -44,9 +58,6 @@
             </div>
         </div>
 
-        <!-- ============================================= -->
-        <!-- AQUÍ EMPIEZA MÓDULO EDIFICIOS -->
-        <!-- ============================================= -->
         <div id="edificios" class="panel">
             <h2 class="text-3xl font-bold mb-6 text-cyan-400">Gestión de Edificios</h2>
             <div class="mb-4 flex gap-2 flex-wrap">
@@ -56,7 +67,7 @@
                 <button onclick="db.export('ed')" class="bg-blue-700 px-4 py-2 rounded">JSON</button>
                 <button onclick="document.getElementById('importFile').click()" class="bg-purple-700 px-4 py-2 rounded">Subir JSON</button>
                 <input type="file" id="importFile" class="hidden" onchange="db.importData(event, 'ed')">
-                <button onclick="db.exportExcel()" class="bg-emerald-700 px-4 py-2 rounded">Excel</button>
+                <button onclick="db.ed.exportExcel()" class="bg-emerald-700 px-4 py-2 rounded">Excel</button>
             </div>
             <div class="bg-slate-800 p-4 rounded grid grid-cols-2 gap-2 mb-6">
                 <input id="edCod" placeholder="Cod" class="bg-slate-700 p-2">
@@ -66,53 +77,646 @@
                 <input id="edMail" placeholder="Correo" class="bg-slate-700 p-2 col-span-2">
             </div>
             <table class="w-full text-left bg-slate-800 rounded text-sm">
-                <thead><tr class="border-b border-slate-700 text-cyan-300"><th class="p-3">Cod</th><th class="p-3">Nombre</th><th class="p-3">Acción</th></tr></thead>
+                <thead><tr class="border-b border-slate-700 text-cyan-300"><th class="p-3">Sel</th><th class="p-3">Cod</th><th class="p-3">Nombre</th><th class="p-3">Dirección</th><th class="p-3">Tel</th><th class="p-3">Correo</th><th class="p-3">Acción</th></tr></thead>
                 <tbody id="tbEdificios"></tbody>
             </table>
         </div>
-
-        <!-- ============================================= -->
-        <!-- AQUÍ EMPIEZA MÓDULO APARTAMENTOS -->
-        <!-- ============================================= -->
-        <div id="aptos" class="panel">
+        
+	<div id="aptos" class="panel">
             <h2 class="text-3xl font-bold mb-6 text-cyan-400">Gestión de Apartamentos</h2>
-            <select id="selEdificio" onchange="db.aptos.render()" class="bg-slate-700 p-2 w-full mb-4 rounded border border-cyan-500 text-white"></select>
+            <select id="selEdificio" onchange="db.aptos.render()" class="bg-slate-700 p-2 w-full mb-4"></select>
+            
             <div class="mb-4 flex gap-2 flex-wrap">
                 <button onclick="db.aptos.add()" class="bg-green-600 px-4 py-2 rounded">Agregar</button>
                 <button onclick="db.aptos.mod()" class="bg-yellow-600 px-4 py-2 rounded">Modificar</button>
                 <button onclick="db.aptos.del()" class="bg-red-700 px-4 py-2 rounded">Borrar</button>
+                <button onclick="db.aptos.export()" class="bg-blue-700 px-4 py-2 rounded">JSON</button>
+                <button onclick="document.getElementById('impAptos').click()" class="bg-purple-700 px-4 py-2 rounded">Subir JSON</button>
+                <input type="file" id="impAptos" class="hidden" onchange="db.aptos.import(event)">
+                <button onclick="db.aptos.exportExcel()" class="bg-emerald-700 px-4 py-2 rounded">Excel</button>
             </div>
-            <div class="bg-slate-800 p-4 rounded grid grid-cols-2 gap-2 mb-6 text-sm">
-                <input id="apCod" placeholder="Cod Apto" class="bg-slate-700 p-2" onblur="db.aptos.validar()">
-                <input id="apNom" placeholder="Nombre" class="bg-slate-700 p-2">
-                <input id="apDir" placeholder="Dirección" class="bg-slate-700 p-2 col-span-2">
+
+            <div class="bg-slate-800 p-4 rounded grid grid-cols-3 gap-2 mb-6 text-sm">
+                <input id="apCod" placeholder="Cod Apto" class="bg-slate-700 p-2">
+                <select id="apTipo" class="bg-slate-700 p-2"><option>Residencial</option><option>Comercial</option><option>Otro</option></select>
+                <input id="apNom" placeholder="Nombre/Descrip." class="bg-slate-700 p-2">
+                <input id="apDir" placeholder="Dirección" class="bg-slate-700 p-2">
+                <input id="apCiu" placeholder="Ciudad" class="bg-slate-700 p-2">
+                <input id="apCel" placeholder="Celular" class="bg-slate-700 p-2">
+                <input id="apMail" placeholder="Email" class="bg-slate-700 p-2">
+                <input id="apObs" placeholder="Observaciones" class="bg-slate-700 p-2 col-span-2">
             </div>
+
             <table class="w-full text-left bg-slate-800 rounded text-sm">
-                <thead><tr class="border-b border-slate-700 text-cyan-300"><th class="p-3">Cod</th><th class="p-3">Nombre</th><th class="p-3">Acción</th></tr></thead>
+                <thead><tr class="text-cyan-300"><th class="p-3">Sel</th><th>Cod</th><th>Nombre</th><th>Tipo</th><th>Acción</th></tr></thead>
                 <tbody id="tbAptos"></tbody>
             </table>
         </div>
 
-        <div id="liquidacion" class="panel"><h2 class="text-3xl text-cyan-400">Liquidación</h2></div>
+
+<div id="liquidacion" class="panel">
+    <h2 class="text-3xl font-bold mb-6 text-cyan-400">Sistema de Liquidación Ejecutiva</h2>
+    
+    <div class="grid grid-cols-2 gap-4 mb-6 bg-slate-800 p-4 rounded">
+        <input id="liq_mes" type="month" class="bg-slate-700 p-2 rounded text-white">
+        <select id="liq_selEdificio" onchange="db.liq.cargarAptos()" class="bg-slate-700 p-2 rounded"></select>
+    </div>
+
+    <div class="bg-slate-800 p-4 rounded mb-6 w-full">
+        <table class="w-full text-center text-sm text-white">
+            <tr class="text-cyan-300"><th>Servicio</th><th>Consumo Total</th><th>Valor Total</th></tr>
+            <tr><td>Acueducto</td><td><input id="liq_con_acu" class="bg-slate-900 w-24 text-center rounded" oninput="db.liq.sumar()"></td><td><input id="liq_val_acu" class="bg-slate-900 w-24 text-center rounded"></td></tr>
+            <tr><td>Energía</td><td><input id="liq_con_ene" class="bg-slate-900 w-24 text-center rounded" oninput="db.liq.sumar()"></td><td><input id="liq_val_ene" class="bg-slate-900 w-24 text-center rounded"></td></tr>
+            <tr><td>Aseo</td><td>-</td><td><input id="liq_val_ase" class="bg-slate-900 w-24 text-center rounded"></td></tr>
+        </table>
+    </div>
+
+    <table class="w-full text-left bg-slate-800 rounded text-sm">
+        <thead class="text-cyan-300 border-b border-slate-700">
+            <tr>
+                <th class="p-3"><input type="checkbox" id="selAll" onclick="db.liq.toggleAll()" checked></th>
+                <th>Apto</th><th>Descrip</th><th>Con.Acu</th><th>Con.Ene</th><th>Vr.Acu</th><th>Vr.Ene</th><th>Vr.Aseo</th>
+            </tr>
+        </thead>
+        <tbody id="tbLiquidacion"></tbody>
+        <tfoot id="tbTotales" class="font-bold border-t border-cyan-500 text-white"></tfoot>
+    </table>
+    
+    <div class="grid grid-cols-2 lg:grid-cols-6 gap-2 mt-6">
+        <button id="btnLiquidar" onclick="db.liq.calcular()" class="bg-cyan-700 p-3 rounded font-bold disabled:opacity-50" disabled>Liquidar</button>
+        <button onclick="db.liq.imprimirFacturas()" class="bg-indigo-600 p-3 rounded font-bold">Imprimir Facturas</button>
+        <button onclick="db.liq.exportJSON()" class="bg-slate-600 p-3 rounded">Guardar JSON</button>
+        <button onclick="document.getElementById('impLiq').click()" class="bg-slate-600 p-3 rounded">Subir JSON</button>
+        <input type="file" id="impLiq" class="hidden" onchange="db.liq.importJSON(event)">
+        <button onclick="db.liq.exportPDF()" class="bg-red-700 p-3 rounded">PDF</button>
+        <button onclick="db.liq.exportExcel()" class="bg-emerald-700 p-3 rounded">Excel</button>
+    </div>
+</div>
+
+
+
+
     </main>
 
     <script>
-        function show(id) {
+        // FUNCIÓN PARA LIMPIAR EDIFICIOS
+        function limpiarEdificios() { ['edCod', 'edNom', 'edDir', 'edTel', 'edMail'].forEach(id => document.getElementById(id).value = ''); }
+        
+        // FUNCIÓN PARA CAMBIAR ENTRE PANELES
+	    function show(id) {
             document.getElementById('marca-inicio').style.display = 'none';
             document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
             document.getElementById(id).classList.add('active');
+            
+            // Aquí agregamos la conexión para liquidación
+            if (id === 'edificios') limpiarEdificios();
             if (id === 'aptos') db.aptos.initSelect();
+            if (id === 'liquidacion') {
+                const list = JSON.parse(localStorage.getItem('ed')) || [];
+                document.getElementById('liq_selEdificio').innerHTML = '<option value="">Sel. Edificio...</option>' + 
+                list.map(e => `<option value="${e.cod}">${e.cod} - ${e.nom}</option>`).join('');
+            }
         }
 
+
         const db = {
-            ed: { /* Lógica Edificios aquí */ },
-            aptos: { /* Lógica Apartamentos aquí */ },
+            init: () => {
+                const emp = JSON.parse(localStorage.getItem('emp'));
+                if(emp) {
+                    document.getElementById('eNom').value = emp.n || '';
+                    document.getElementById('eNit').value = emp.nit || '';
+                    document.getElementById('eDir').value = emp.dir || '';
+                    document.getElementById('eTel').value = emp.tel || '';
+                    document.getElementById('eMail').value = emp.mail || '';
+                }
+                db.ed.render();
+            },
+ 		// LÓGICA EDIFICIOS
+            	ed: {
+                add: () => {
+                    const c = document.getElementById('edCod').value;
+                    if(!c) { alert("Error: No se puede agregar registros en blanco"); return; }
+                    let list = JSON.parse(localStorage.getItem('ed')) || [];
+                    if(list.find(e => e.cod === c)) { alert("Error: Código duplicado"); return; }
+                    list.push({cod: c, nom: document.getElementById('edNom').value, dir: document.getElementById('edDir').value, tel: document.getElementById('edTel').value, mail: document.getElementById('edMail').value});
+                    localStorage.setItem('ed', JSON.stringify(list));
+                    limpiarEdificios(); db.ed.render();
+                },
+                render: () => {
+                    let list = JSON.parse(localStorage.getItem('ed')) || [];
+                    // Ordenar por código
+                    list.sort((a, b) => a.cod.localeCompare(b.cod));
+                    document.getElementById('tbEdificios').innerHTML = list.map((e, i) => 
+                        `<tr><td class="p-3"><input type="checkbox" class="edCheck" data-i="${i}"></td>
+                         <td class="p-3">${e.cod}</td><td class="p-3">${e.nom}</td><td class="p-3">${e.dir}</td>
+                         <td class="p-3">${e.tel}</td><td class="p-3">${e.mail}</td>
+                         <td class="p-3">
+                            <button onclick="db.ed.ver(${i})" class="mr-2">👁️</button>
+                            <button onclick="db.ed.editar(${i})">✏️</button>
+                         </td></tr>`).join('');
+                },
+                exportExcel: () => {
+                    const list = JSON.parse(localStorage.getItem('ed')) || [];
+                    if(list.length === 0) return alert("No hay datos");
+                    
+                    let html = `<h3>Lista de Edificios</h3>
+                                <table border="1">
+                                <tr style="background-color:#1E293B; color:#FFFFFF; font-weight:bold;">
+                                    <th>Código</th><th>Nombre</th><th>Dirección</th><th>Teléfono</th><th>Correo</th>
+                                </tr>`;
+                    list.forEach(e => {
+                        html += `<tr><td>${e.cod||''}</td><td>${e.nom||''}</td><td>${e.dir||''}</td><td>${e.tel||''}</td><td>${e.mail||''}</td></tr>`;
+                    });
+                    html += `</table>`;
+                    const a = document.createElement('a');
+                    a.href = 'data:application/vnd.ms-excel,' + encodeURIComponent(html);
+                    a.download = 'Lista_Edificios.xls'; a.click();
+                },
+                editar: (i) => {
+                    const e = JSON.parse(localStorage.getItem('ed'))[i];
+                    document.getElementById('edCod').value = e.cod; document.getElementById('edNom').value = e.nom; document.getElementById('edDir').value = e.dir; document.getElementById('edTel').value = e.tel; document.getElementById('edMail').value = e.mail;
+                },
+                mod: () => {
+                    const c = document.getElementById('edCod').value;
+                    let list = JSON.parse(localStorage.getItem('ed'));
+                    const i = list.findIndex(e => e.cod === c);
+                    if(i !== -1) { list[i] = {cod: c, nom: document.getElementById('edNom').value, dir: document.getElementById('edDir').value, tel: document.getElementById('edTel').value, mail: document.getElementById('edMail').value}; localStorage.setItem('ed', JSON.stringify(list)); limpiarEdificios(); db.ed.render(); }
+                },
+                del: () => {
+                    let list = JSON.parse(localStorage.getItem('ed'));
+                    // Nota: para borrar por índice tras ordenar, es mejor usar código.
+                    // Pero para mantenerlo simple:
+                    document.querySelectorAll('.edCheck:checked').forEach(c => list.splice(c.dataset.i, 1));
+                    localStorage.setItem('ed', JSON.stringify(list)); db.ed.render();
+                },
+                ver: (i) => {
+                    const e = JSON.parse(localStorage.getItem('ed'))[i];
+                    document.getElementById('contenidoModal').innerHTML = `<p><b>Cod:</b> ${e.cod}</p><p><b>Nombre:</b> ${e.nom}</p><p><b>Dir:</b> ${e.dir}</p><p><b>Tel:</b> ${e.tel}</p><p><b>Correo:</b> ${e.mail}</p>`;
+                    document.getElementById('modalVista').classList.remove('hidden');
+                }
+            },
+
+// =========================================================
+            // INICIO LÓGICA APARTAMENTOS
+            // =========================================================
+		aptos: {
+                initSelect: () => {
+                    const list = JSON.parse(localStorage.getItem('ed')) || [];
+                    document.getElementById('selEdificio').innerHTML = '<option value="">Seleccione Edificio...</option>' + 
+                    list.map(e => `<option value="${e.cod}">${e.cod} - ${e.nom}</option>`).join('');
+                },
+                limpiar: () => {
+                    ['apCod', 'apNom', 'apDir', 'apTipo', 'apCiu', 'apCel', 'apMail', 'apObs'].forEach(id => {
+                        const el = document.getElementById(id);
+                        if(el) el.value = '';
+                    });
+                },
+                add: () => {
+                    const edId = document.getElementById('selEdificio').value;
+                    const c = document.getElementById('apCod').value;
+                    if(!edId || !c) { alert("¡Seleccione edificio y código!"); return; }
+                    let list = JSON.parse(localStorage.getItem('aptos_' + edId)) || [];
+                    list.push({cod: c, nom: document.getElementById('apNom').value, tipo: document.getElementById('apTipo').value, dir: document.getElementById('apDir').value, ciu: document.getElementById('apCiu').value, cel: document.getElementById('apCel').value, mail: document.getElementById('apMail').value, obs: document.getElementById('apObs').value});
+                    localStorage.setItem('aptos_' + edId, JSON.stringify(list));
+                    db.aptos.limpiar(); db.aptos.render();
+                },
+                mod: () => {
+                    const edId = document.getElementById('selEdificio').value;
+                    const c = document.getElementById('apCod').value;
+                    let list = JSON.parse(localStorage.getItem('aptos_' + edId)) || [];
+                    const i = list.findIndex(a => a.cod === c);
+                    if(i !== -1) {
+                        list[i] = {cod: c, nom: document.getElementById('apNom').value, tipo: document.getElementById('apTipo').value, dir: document.getElementById('apDir').value, ciu: document.getElementById('apCiu').value, cel: document.getElementById('apCel').value, mail: document.getElementById('apMail').value, obs: document.getElementById('apObs').value};
+                        localStorage.setItem('aptos_' + edId, JSON.stringify(list));
+                        db.aptos.limpiar(); db.aptos.render();
+                    } else { alert("Código no encontrado para modificar"); }
+                },
+                render: () => {
+                    const edId = document.getElementById('selEdificio').value;
+                    let list = JSON.parse(localStorage.getItem('aptos_' + edId)) || [];
+                    list.sort((a, b) => a.cod.localeCompare(b.cod));
+                    document.getElementById('tbAptos').innerHTML = list.map((a, i) => 
+                        `<tr><td class="p-3"><input type="checkbox" class="apCheck" data-i="${i}"></td>
+                         <td>${a.cod}</td><td>${a.nom}</td><td>${a.tipo}</td>
+                         <td><button onclick="db.aptos.ver(${i})">👁️</button> <button onclick="db.aptos.cargar(${i})">✏️</button></td></tr>`).join('');
+                },
+                ver: (i) => {
+                    const edId = document.getElementById('selEdificio').value;
+                    const a = JSON.parse(localStorage.getItem('aptos_' + edId))[i];
+                    document.getElementById('contenidoModal').innerHTML = `
+                        <p><b>Cod:</b> ${a.cod}</p><p><b>Nombre:</b> ${a.nom}</p>
+                        <p><b>Tipo:</b> ${a.tipo}</p><p><b>Dir:</b> ${a.dir}</p>
+                        <p><b>Ciudad:</b> ${a.ciu}</p><p><b>Cel:</b> ${a.cel}</p>
+                        <p><b>Email:</b> ${a.mail}</p><p><b>Obs:</b> ${a.obs}</p>`;
+                    document.getElementById('modalVista').classList.remove('hidden');
+                },
+                cargar: (i) => {
+                    const edId = document.getElementById('selEdificio').value;
+                    const a = JSON.parse(localStorage.getItem('aptos_' + edId))[i];
+                    document.getElementById('apCod').value = a.cod; document.getElementById('apNom').value = a.nom; document.getElementById('apDir').value = a.dir; document.getElementById('apTipo').value = a.tipo; document.getElementById('apCiu').value = a.ciu; document.getElementById('apCel').value = a.cel; document.getElementById('apMail').value = a.mail; document.getElementById('apObs').value = a.obs;
+                },
+                del: () => {
+                    const edId = document.getElementById('selEdificio').value;
+                    let list = JSON.parse(localStorage.getItem('aptos_' + edId)) || [];
+                    document.querySelectorAll('.apCheck:checked').forEach(c => list.splice(c.dataset.i, 1));
+                    localStorage.setItem('aptos_' + edId, JSON.stringify(list)); db.aptos.render();
+                },
+                import: (e) => {
+                    const edId = document.getElementById('selEdificio').value;
+                    if(!edId) return alert("Seleccione edificio primero");
+                    const reader = new FileReader();
+                    reader.onload = (ev) => { localStorage.setItem('aptos_' + edId, ev.target.result); db.aptos.render(); };
+                    reader.readAsText(e.target.files[0]);
+                },
+                export: () => {
+                    const edId = document.getElementById('selEdificio').value;
+                    if(!edId) return alert("Seleccione edificio");
+                    const data = localStorage.getItem('aptos_' + edId);
+                    const a = document.createElement('a');
+                    a.href = "data:text/json;charset=utf-8," + encodeURIComponent(data);
+                    a.download = "aptos_" + edId + ".json"; a.click();
+                },
+                exportExcel: () => {
+                    const edId = document.getElementById('selEdificio').value;
+                    const select = document.getElementById('selEdificio');
+                    const edNombre = select.options[select.selectedIndex].text;
+                    if(!edId) return alert("Seleccione edificio primero");
+                    
+                    const list = JSON.parse(localStorage.getItem('aptos_' + edId)) || [];
+                    
+                    let html = `
+                    <h3>Lista de Apartamentos</h3>
+                    <p><b>Edificio:</b> ${edNombre}</p>
+                    <table border="1">
+                        <tr style="background-color:#1E293B; color:#FFFFFF; font-weight:bold;">
+                            <th>Código</th><th>Nombre</th><th>Tipo</th><th>Dirección</th>
+                            <th>Ciudad</th><th>Celular</th><th>Email</th><th>Obs</th>
+                        </tr>`;
+                    
+                    list.forEach(a => {
+                        // Usamos || '' para que si algún campo no existe, salga vacío en lugar de 'undefined'
+                        html += `<tr>
+                            <td>${a.cod || ''}</td><td>${a.nom || ''}</td><td>${a.tipo || ''}</td>
+                            <td>${a.dir || ''}</td><td>${a.ciu || ''}</td><td>${a.cel || ''}</td>
+                            <td>${a.mail || ''}</td><td>${a.obs || ''}</td>
+                        </tr>`;
+                    });
+                    html += `</table>`;
+
+                    const blob = new Blob([html], {type: 'application/vnd.ms-excel'});
+                    const a = document.createElement('a');
+                    a.href = URL.createObjectURL(blob);
+                    a.download = `Aptos_${edId}.xls`;
+                    a.click();
+                }
+            },
+            // =========================================================
+            // FIN LÓGICA APARTAMENTOS
+            // =========================================================
+
+
+
+
+            // INICIO LÓGICA LIQUIDACION
+            // =========================================================
+
+
+	liq: {
+ 
+    cargarAptos: () => {
+        const edId = document.getElementById('liq_selEdificio').value;
+        const list = JSON.parse(localStorage.getItem('aptos_' + edId)) || [];
+        document.getElementById('tbLiquidacion').innerHTML = list.map(a => `
+            <tr class="apto-fila" data-cod="${a.cod}">
+                <td class="p-3"><input type="checkbox" class="selApto" checked></td>
+                <td class="p-3">${a.cod}</td><td>${a.nom}</td>
+                <td><input class="c_acu bg-slate-900 w-20 p-1 text-center" value="0" oninput="db.liq.sumar()"></td>
+                <td><input class="c_ene bg-slate-900 w-20 p-1 text-center" value="0" oninput="db.liq.sumar()"></td>
+                <td class="v_acu text-right pr-4">0</td>
+                <td class="v_ene text-right pr-4">0</td>
+                <td class="v_ase text-right pr-4">0</td>
+            </tr>`).join('');
+        db.liq.sumar();
+    },
+
+    toggleAll: () => {
+        const isChecked = document.getElementById('selAll').checked;
+        document.querySelectorAll('.selApto').forEach(c => c.checked = isChecked);
+    },
+
+    sumar: () => {
+        let t_c_acu = 0, t_c_ene = 0;
+        document.querySelectorAll('.c_acu').forEach(i => t_c_acu += parseFloat(i.value)||0);
+        document.querySelectorAll('.c_ene').forEach(i => t_c_ene += parseFloat(i.value)||0);
+        const faltaAcu = (parseFloat(document.getElementById('liq_con_acu').value)||0) - t_c_acu;
+        const faltaEne = (parseFloat(document.getElementById('liq_con_ene').value)||0) - t_c_ene;
+        
+        document.getElementById('tbTotales').innerHTML = `
+            <tr class="bg-slate-700">
+                <td colspan="3" class="p-3">TOTALES CONSUMO</td>
+                <td>${t_c_acu}</td><td>${t_c_ene}</td><td colspan="3"></td>
+            </tr>
+            <tr class="${(faltaAcu !== 0 || faltaEne !== 0) ? 'bg-orange-700' : 'bg-green-700'}">
+                <td colspan="3" class="p-3">FALTA POR DISTRIBUIR</td>
+                <td>${faltaAcu}</td><td>${faltaEne}</td><td colspan="3"></td>
+            </tr>`;
+        document.getElementById('btnLiquidar').disabled = (faltaAcu !== 0 || faltaEne !== 0);
+    },
+
+calcular: () => {
+        const totalAcu = parseFloat(document.getElementById('liq_val_acu').value.replace(/\./g, '')) || 0;
+        const consAcu = parseFloat(document.getElementById('liq_con_acu').value) || 1;
+        const totalEne = parseFloat(document.getElementById('liq_val_ene').value.replace(/\./g, '')) || 0;
+        const consEne = parseFloat(document.getElementById('liq_con_ene').value) || 1;
+        const totalAse = parseFloat(document.getElementById('liq_val_ase').value.replace(/\./g, '')) || 0;
+        
+        const filas = document.querySelectorAll('.apto-fila');
+        let distAcu = 0, distEne = 0, distAse = 0;
+
+        filas.forEach(f => {
+            const vAcu = Math.round((totalAcu / consAcu) * (f.querySelector('.c_acu').value || 0));
+            const vEne = Math.round((totalEne / consEne) * (f.querySelector('.c_ene').value || 0));
+            const vAse = Math.round(totalAse / filas.length);
+            
+            f.querySelector('.v_acu').innerText = vAcu.toLocaleString('es-CO');
+            f.querySelector('.v_ene').innerText = vEne.toLocaleString('es-CO');
+            f.querySelector('.v_ase').innerText = vAse.toLocaleString('es-CO');
+            
+            distAcu += vAcu; distEne += vEne; distAse += vAse;
+        });
+
+        // Aquí agregamos la tabla de control visual en el tbTotales
+        const pendiente = (totalAcu + totalEne + totalAse) - (distAcu + distEne + distAse);
+        
+        document.getElementById('tbTotales').innerHTML = `
+            <tr class="bg-slate-700 text-white">
+                <td colspan="3" class="p-3 text-right">TOTAL DISTRIBUIDO:</td>
+                <td>${distAcu.toLocaleString('es-CO')}</td>
+                <td>${distEne.toLocaleString('es-CO')}</td>
+                <td>${distAse.toLocaleString('es-CO')}</td>
+            </tr>
+            <tr class="${pendiente === 0 ? 'bg-green-800' : 'bg-red-800'} text-white">
+                <td colspan="5" class="p-3 text-right">PENDIENTE POR DISTRIBUIR (SALDO):</td>
+                <td colspan="2" class="font-bold text-xl">$ ${pendiente.toLocaleString('es-CO')}=</td>
+            </tr>`;
+    },
+
+imprimirFacturas: () => {
+        const sel = document.querySelectorAll('.selApto:checked');
+        if(sel.length === 0) return alert("Seleccione al menos un apartamento.");
+        
+        const emp = JSON.parse(localStorage.getItem('emp')) || {n: 'NOMBRE EMPRESA', nit: 'NIT XXXXX', dir: 'DIR XXXXX', tel: 'TEL XXXXX'};
+        const ed = document.getElementById('liq_selEdificio');
+        const edText = ed.options[ed.selectedIndex].text;
+        const periodo = document.getElementById('liq_mes').value;
+        const fechaImp = new Date().toLocaleDateString();
+        const edId = ed.value;
+        const aptosDb = JSON.parse(localStorage.getItem('aptos_' + edId)) || [];
+
+        const limpiar = (val) => parseFloat(val.toString().replace(/\./g, '')) || 0;
+        const fM = (val) => Math.round(val).toLocaleString('es-CO').replace(/,/g, '.') + '=';
+
+        let html = `
+        <style>
+            @media print { .hoja { page-break-after: always; } }
+            body { font-family: Arial, sans-serif; }
+            .factura { width: 100%; height: 48%; padding: 10px; box-sizing: border-box; border-bottom: 1px dashed #000; }
+            .empresa { font-size: 18px; font-weight: bold; text-align: center; }
+            .seccion { font-size: 14px; font-weight: bold; margin-top: 10px; text-decoration: underline; }
+            .texto { font-size: 12px; text-align: left; margin: 2px 0; }
+            table { width: 100%; border-collapse: collapse; margin: 5px 0; }
+            th, td { border: 1px solid #000; padding: 3px; text-align: center; font-size: 12px; }
+        </style>`;
+
+        sel.forEach(c => {
+            const f = c.closest('.apto-fila');
+            const aptoData = aptosDb.find(a => a.cod === f.dataset.cod);
+            const dirApto = aptoData ? aptoData.dir : '';
+            
+            const vAcu = limpiar(f.querySelector('.v_acu').innerText);
+            const vEne = limpiar(f.querySelector('.v_ene').innerText);
+            const vAse = limpiar(f.querySelector('.v_ase').innerText);
+            const total = vAcu + vEne + vAse;
+            
+            const cuerpoFactura = `
+                <div class="empresa">${emp.n} - ${emp.nit}</div>
+                <div class="texto">Tel: ${emp.tel}</div>
+                <div class="seccion">LIQUIDACIÓN DE SERVICIOS PÚBLICOS</div>
+                <div class="texto"><b>EDIFICIO:</b> ${edText}</div>
+                <div class="texto"><b>APARTAMENTO:</b> ${f.cells[1].innerText} - ${f.cells[2].innerText} - ${dirApto}</div>
+                <div class="texto"><b>PERIODO:</b> ${periodo}</div>
+                
+                <p class="seccion" style="font-size:14px;">SERVICIOS PÚBLICOS (EDIFICIO)</p>
+                <table>
+                    <tr><th>Servicio</th><th>CONSUMO</th><th>VALOR TOT</th></tr>
+                    <tr><td>ACUEDUCTO</td><td>${document.getElementById('liq_con_acu').value}</td><td>${document.getElementById('liq_val_acu').value}</td></tr>
+                    <tr><td>ENERGÍA</td><td>${document.getElementById('liq_con_ene').value}</td><td>${document.getElementById('liq_val_ene').value}</td></tr>
+                    <tr><td>ASEO</td><td>-</td><td>${document.getElementById('liq_val_ase').value}</td></tr>
+                </table>
+
+                <p class="seccion" style="font-size:14px;">LIQUIDACIÓN Y DISTRIBUCIÓN</p>
+                <table>
+                    <tr><th>Servicio</th><th>CONSUMO</th><th>VALOR TOT</th></tr>
+                    <tr><td>ACUEDUCTO</td><td>${f.querySelector('.c_acu').value}</td><td>${f.querySelector('.v_acu').innerText}</td></tr>
+                    <tr><td>ENERGÍA</td><td>${f.querySelector('.c_ene').value}</td><td>${f.querySelector('.v_ene').innerText}</td></tr>
+                    <tr><td>ASEO</td><td>-</td><td>${f.querySelector('.v_ase').innerText}</td></tr>
+                    <tr><td colspan="2" style="text-align:right;"><b>TOTAL LIQUIDADO ADEUDADO</b></td><td><b>${fM(total)}</b></td></tr>
+                </table>
+                <div class="texto" style="margin-top:10px;">Cordialmente,<br>Edificio: ${edText.split(' - ')[1] || edText}<br>Fecha de Impresión: ${fechaImp}</div>`;
+
+            html += `<div class="hoja"><div class="factura">${cuerpoFactura}</div><div class="factura">${cuerpoFactura}</div></div>`;
+        });
+
+        const v = window.open('', '_blank');
+        v.document.write(html);
+        v.print();
+    },
+
+
+	exportExcel: () => {
+                    const ed = document.getElementById('liq_selEdificio');
+                    const mes = document.getElementById('liq_mes').value;
+                    const emp = JSON.parse(localStorage.getItem('emp')) || {n: 'EQUITY V2.0'};
+                    
+                    let html = `<table border="1">
+                        <tr><th colspan="7" style="font-size:18px; background:#1E293B; color:white; text-align:center;">LIQUIDACIÓN DE DISTRIBUCIÓN DE GASTOS</th></tr>
+                        <tr><td colspan="7"><b>Empresa:</b> ${emp.n} | <b>Edificio:</b> ${ed.options[ed.selectedIndex].text} | <b>Periodo:</b> ${mes}</td></tr>
+                        
+                        <tr style="background:#f3f4f6;"><th colspan="2">Servicio</th><th>Consumo Total</th><th colspan="4">Valor Total</th></tr>
+                        <tr><td colspan="2">Acueducto</td><td>${document.getElementById('liq_con_acu').value}</td><td colspan="4">${document.getElementById('liq_val_acu').value}</td></tr>
+                        <tr><td colspan="2">Energía</td><td>${document.getElementById('liq_con_ene').value}</td><td colspan="4">${document.getElementById('liq_val_ene').value}</td></tr>
+                        <tr><td colspan="2">Aseo</td><td>-</td><td colspan="4">${document.getElementById('liq_val_ase').value}</td></tr>
+                        
+                        <tr style="background:#ddd;"><th>Apto</th><th>Descrip</th><th>Con.Acu</th><th>Con.Ene</th><th>Vr.Acu</th><th>Vr.Ene</th><th>Vr.Aseo</th></tr>`;
+                    
+                    // Cuerpo de la Tabla
+                    document.querySelectorAll('.apto-fila').forEach(f => {
+                        html += `<tr>
+                            <td>${f.cells[0].innerText}</td>
+                            <td>${f.cells[1].innerText}</td>
+                            <td>${f.querySelector('.c_acu').value}</td>
+                            <td>${f.querySelector('.c_ene').value}</td>
+                            <td>${f.querySelector('.v_acu').innerText}</td>
+                            <td>${f.querySelector('.v_ene').innerText}</td>
+                            <td>${f.querySelector('.v_ase').innerText}</td>
+                        </tr>`;
+                    });
+
+                    // Totales finales (inyectados desde el tfoot)
+                    html += document.getElementById('tbTotales').innerHTML + '</table>';
+                    
+                    // Creación y descarga del archivo
+                    const a = document.createElement('a');
+                    a.href = 'data:application/vnd.ms-excel,' + encodeURIComponent(html);
+                    a.download = `Liquidacion_${ed.options[ed.selectedIndex].text.replace(/ /g, '_')}.xls`;
+                    a.click();
+                },
+
+
+exportPDF: () => {
+        const ed = document.getElementById('liq_selEdificio');
+        const emp = JSON.parse(localStorage.getItem('emp')) || {n: 'EQUITY V2.0'};
+        
+        // Creamos una tabla nueva recorriendo las filas actuales
+        let filasHtml = '';
+        document.querySelectorAll('.apto-fila').forEach(f => {
+            filasHtml += `<tr>
+                <td>${f.cells[0].innerText}</td>
+                <td>${f.cells[1].innerText}</td>
+                <td>${f.querySelector('.c_acu').value}</td>
+                <td>${f.querySelector('.c_ene').value}</td>
+                <td>${f.querySelector('.v_acu').innerText}</td>
+                <td>${f.querySelector('.v_ene').innerText}</td>
+                <td>${f.querySelector('.v_ase').innerText}</td>
+            </tr>`;
+        });
+
+        const ventana = window.open('', '_blank');
+        ventana.document.write(`
+            <div style="font-family: Arial; padding: 30px;">
+                <h1 style="text-align:center;">${emp.n}</h1>
+                <h3 style="text-align:center;">Liquidación - ${ed.options[ed.selectedIndex].text} - ${document.getElementById('liq_mes').value}</h3>
+                
+                <table border="1" style="width:100%; border-collapse: collapse; margin-bottom: 20px;">
+                    <tr style="background:#eee;"><th>Servicio</th><th>Consumo Total</th><th>Valor Total</th></tr>
+                    <tr><td>Acueducto</td><td>${document.getElementById('liq_con_acu').value}</td><td>${document.getElementById('liq_val_acu').value}</td></tr>
+                    <tr><td>Energía</td><td>${document.getElementById('liq_con_ene').value}</td><td>${document.getElementById('liq_val_ene').value}</td></tr>
+                    <tr><td>Aseo</td><td>-</td><td>${document.getElementById('liq_val_ase').value}</td></tr>
+                </table>
+
+                <table border="1" style="width:100%; border-collapse: collapse; text-align: right;">
+                    <tr style="background:#eee;"><th>Apto</th><th>Descrip</th><th>Con.Acu</th><th>Con.Ene</th><th>Vr.Acu</th><th>Vr.Ene</th><th>Vr.Aseo</th></tr>
+                    ${filasHtml}
+                    ${document.getElementById('tbTotales').innerHTML}
+                </table>
+            </div>
+        `);
+        ventana.print();
+    },
+
+
+
+	importJSON: (e) => {
+                    const file = e.target.files[0];
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        try {
+                            const data = JSON.parse(event.target.result);
+                            // 1. Validar edificio
+                            const edList = JSON.parse(localStorage.getItem('ed')) || [];
+                            if(!edList.find(e => e.cod === data.ed)) return alert("Error: El edificio del reporte no existe en la base de datos.");
+                            
+                            // 2. Cargar edificio en el select
+                            document.getElementById('liq_selEdificio').value = data.ed;
+                            db.liq.cargarAptos();
+                            
+                            // 3. Llenar servicios
+                            document.getElementById('liq_con_acu').value = data.servicios.acuC;
+                            document.getElementById('liq_val_acu').value = data.servicios.acuV;
+                            document.getElementById('liq_con_ene').value = data.servicios.eneC;
+                            document.getElementById('liq_val_ene').value = data.servicios.eneV;
+                            document.getElementById('liq_val_ase').value = data.servicios.aseV;
+                            document.getElementById('liq_mes').value = data.mes;
+                            
+                            // 4. Llenar consumos de aptos
+                            data.detalles.forEach(d => {
+                                const fila = document.querySelector(`.apto-fila[data-cod="${d.cod}"]`);
+                                if(fila) {
+                                    fila.querySelector('.c_acu').value = d.cAcu;
+                                    fila.querySelector('.c_ene').value = d.cEne;
+                                }
+                            });
+                            db.liq.sumar();
+                            alert("Informe cargado exitosamente.");
+                        } catch(err) { alert("Archivo JSON inválido."); }
+                    };
+                    reader.readAsText(file);
+                },
+
+
+
+    exportJSON: () => {
+        const data = {
+            mes: document.getElementById('liq_mes').value,
+            ed: document.getElementById('liq_selEdificio').value,
+            servicios: { acuC: document.getElementById('liq_con_acu').value, acuV: document.getElementById('liq_val_acu').value, 
+                         eneC: document.getElementById('liq_con_ene').value, eneV: document.getElementById('liq_val_ene').value, 
+                         aseV: document.getElementById('liq_val_ase').value },
+            detalles: Array.from(document.querySelectorAll('.apto-fila')).map(f => ({
+                cod: f.dataset.cod,
+                cAcu: f.querySelector('.c_acu').value,
+                cEne: f.querySelector('.c_ene').value
+            }))
+        };
+        const blob = new Blob([JSON.stringify(data)], {type: 'application/json'});
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `Liq_${data.mes}_${data.ed}.json`; a.click();
+    }
+            }, // <--- ESTA COMA ES VITAL
+
+            // FIN LÓGICA LIQUIDACION
+            // =========================================================
+
+
+
+
+
+
+
+
             saveEmp: () => {
                 const data = { n: document.getElementById('eNom').value, nit: document.getElementById('eNit').value, dir: document.getElementById('eDir').value, tel: document.getElementById('eTel').value, mail: document.getElementById('eMail').value };
                 localStorage.setItem('emp', JSON.stringify(data));
                 alert("Empresa guardada");
-            }
+            },
+            importData: (e, key) => {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    try {
+                        // Validar que sea JSON real
+                        const data = JSON.parse(event.target.result);
+                        localStorage.setItem(key, JSON.stringify(data));
+                        
+                        // Refrescar la vista dependiendo de qué estás subiendo
+                        if(key === 'ed') db.ed.render();
+                        else if(key.startsWith('aptos_')) db.aptos.render();
+                        
+                        alert("Datos importados correctamente");
+                        e.target.value = ''; // Resetear el input para que detecte futuros cambios
+                    } catch (err) {
+                        alert("Error: El archivo no es un JSON válido");
+                    }
+                };
+                reader.readAsText(file);
+            },
+            exportExcel: () => { alert("Exportando..."); }
         };
+        window.onload = db.init;
     </script>
 </body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </html>
